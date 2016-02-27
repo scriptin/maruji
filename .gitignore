@@ -1,1 +1,3 @@
 node_modules/
+data-in/*.json
+data-in/*.tsv
