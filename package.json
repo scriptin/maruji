@@ -1,0 +1,20 @@
+{
+  "private": true,
+  "name": "maruji",
+  "version": "0.1.0",
+  "description": "Alien technology for learning kanji",
+  "main": "build-data.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "kanji",
+    "japanese"
+  ],
+  "author": "Dmitry Shpika",
+  "license": "CC-BY-NC-SA-4.0",
+  "devDependencies": {
+    "bluebird": "^3.3.3",
+    "lodash": "^4.5.1"
+  }
+}
