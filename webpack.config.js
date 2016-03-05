@@ -1,4 +1,5 @@
 var webpack = require('webpack');
+var CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './src/main.jsx',
@@ -12,7 +13,8 @@ module.exports = {
   },
   plugins: [
     //new webpack.optimize.UglifyJsPlugin(),
-    new webpack.DefinePlugin({'process.env.NODE_ENV': '"development"'})
+    new webpack.DefinePlugin({'process.env.NODE_ENV': '"development"'}),
+    new CopyWebpackPlugin([{ from: 'src/resources' }])
   ],
   module: {
     loaders: [
