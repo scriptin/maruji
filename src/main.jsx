@@ -5,6 +5,9 @@ import { Provider } from 'react-redux'
 import { createStore } from 'redux'
 import app from './reducers'
 
+import 'expose?$!expose?jQuery!jquery'
+import 'bootstrap-webpack'
+
 const store = createStore(app)
 
 ReactDOM.render(
