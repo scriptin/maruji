@@ -5,7 +5,8 @@
   "description": "Alien technology for learning kanji",
   "main": "build-data.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node_modules/webpack-dev-server/bin/webpack-dev-server.js --content-base build/"
   },
   "keywords": [
     "kanji",
@@ -13,8 +14,18 @@
   ],
   "author": "Dmitry Shpika",
   "license": "CC-BY-NC-SA-4.0",
-  "devDependencies": {
+  "dependencies": {
     "bluebird": "^3.3.3",
-    "lodash": "^4.5.1"
+    "lodash": "^4.6.1",
+    "react": "^0.14.7",
+    "react-dom": "^0.14.7",
+    "react-redux": "^4.4.0",
+    "react-router": "^2.0.0",
+    "react-router-redux": "^4.0.0",
+    "redux": "^3.3.1"
+  },
+  "devDependencies": {
+    "jsx-loader": "^0.13.2",
+    "webpack-dev-server": "^1.14.1"
   }
 }
