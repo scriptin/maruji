@@ -1,17 +1,30 @@
-import React from 'react'
+import React, { PropTypes } from 'react'
 import { connect } from 'react-redux'
 
-const App = React.createClass({
-  render: () => {
-    return <div className="container">
+function App({ status }) {
+  return (
+    <div className="container">
       <div className="row">
         <div className="col-md-12">
-          <span className="glyphicon glyphicon-star" aria-hidden="true"></span>
-          Hello world
+          { status }
         </div>
       </div>
     </div>
-  }
-})
+  )
+}
 
-export default connect()(App)
+App.propTypes = {
+  status: PropTypes.string.isRequired
+}
+
+function mapStateToProps(state) {
+  return {
+    status: state.isLoading
+      ? 'Loading...'
+      : (state.lastError === null)
+        ? 'Done!'
+        : 'Last error: ' + state.lastError
+  }
+}
+
+export default connect(mapStateToProps)(App)
