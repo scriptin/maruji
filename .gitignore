@@ -1,5 +1,8 @@
 node_modules/
+npm-debug.log
+
 data-in/*.json
 data-in/*.tsv
+
 build/**
 !build/index.html
