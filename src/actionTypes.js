@@ -1,3 +1,3 @@
-module.export = {
-  INIT_APP: 'INIT_APP'
-};
+export default {
+  INIT_APP
+}

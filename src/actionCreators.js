@@ -1,11 +1,7 @@
-var actionTypes = require('./actionTypes');
+import * from './actionTypes'
 
-function initApp() {
+export function initApp() {
   return {
-    type: actionTypes.INIT_APP
-  };
+    type: INIT_APP
+  }
 }
-
-module.exports = {
-  initApp: initApp
-};

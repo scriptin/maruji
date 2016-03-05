@@ -1,10 +1,5 @@
-var initialState = {};
+let initialState = {}
 
-function app(state, action) {
-  if (typeof state === 'undefined') {
-    return initialState;
-  }
-  return state;
+export default function app(state = initialState, action) {
+  return state
 }
-
-module.exports = app;
