@@ -1,12 +1,12 @@
 import React, { PropTypes } from 'react'
 import { connect } from 'react-redux'
 
-function App({ status }) {
+function App({ isLoading, status }) {
   return (
     <div className="container">
       <div className="row">
         <div className="col-md-12">
-          { status }
+          { isLoading ? 'Loading...' : status }
         </div>
       </div>
     </div>
@@ -14,16 +14,14 @@ function App({ status }) {
 }
 
 App.propTypes = {
+  isLoading: PropTypes.bool.isRequired,
   status: PropTypes.string.isRequired
 }
 
 function mapStateToProps(state) {
   return {
-    status: state.isLoading
-      ? 'Loading...'
-      : (state.lastError === null)
-        ? 'Done!'
-        : 'Last error: ' + state.lastError
+    isLoading: state.isLoading,
+    status: state.lastError ? '' + state.lastError : 'Done!'
   }
 }
 

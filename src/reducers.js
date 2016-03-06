@@ -1,30 +1,28 @@
 import _ from 'lodash'
 import $ from 'jquery'
-import * as actions from './actions'
+import { handleActions } from 'redux-actions'
+import {
+  DEFS_LOAD_START,
+  DEFS_LOAD_SUCCESS,
+  DEFS_LOAD_FAILURE
+} from './actions'
 
 let initialState = {
   isLoading: false,
-  defs: {},
-  lastError: null
+  lastError: null,
+  defs: {}
 }
 
-export default function app(state = initialState, action) {
-  switch (action.type) {
-    case actions.DEFS_LOAD_START:
-      return _.assign({}, state, {
-        isLoading: true
-      })
-    case actions.DEFS_LOAD_SUCCESS:
-      return _.assign({}, state, {
-        isLoading: false,
-        defs: action.defs
-      })
-    case actions.DEFS_LOAD_FAIL:
-      return _.assign({}, state, {
-        isLoading: false,
-        lastError: action.error
-      })
-    default:
-      return state
-  }
-}
+export default handleActions({
+  [DEFS_LOAD_START]: (state, action) => _.assign({}, state, {
+    isLoading: true
+  }),
+  [DEFS_LOAD_SUCCESS]: (state, action) => _.assign({}, state, {
+    isLoading: false,
+    defs: action.payload
+  }),
+  [DEFS_LOAD_FAILURE]: (state, action) => _.assign({}, state, {
+    isLoading: false,
+    lastError: action.payload
+  })
+}, initialState)
