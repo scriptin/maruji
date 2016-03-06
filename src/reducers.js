@@ -23,6 +23,6 @@ export default handleActions({
   }),
   [DEFS_LOAD_FAILURE]: (state, action) => _.assign({}, state, {
     isLoading: false,
-    lastError: action.payload
+    lastError: action.payload.toString()
   })
 }, initialState)

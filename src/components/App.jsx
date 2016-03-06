@@ -1,28 +1,13 @@
 import React, { PropTypes } from 'react'
 import { connect } from 'react-redux'
+import Header from './Header'
+import StatusBar from './StatusBar'
 
-function App({ isLoading, status }) {
-  return (
-    <div className="container">
-      <div className="row">
-        <div className="col-md-12">
-          { isLoading ? 'Loading...' : status }
-        </div>
-      </div>
-    </div>
-  )
-}
+const App = ({ isLoading, status }) => (
+  <div>
+    <Header />
+    <StatusBar />
+  </div>
+)
 
-App.propTypes = {
-  isLoading: PropTypes.bool.isRequired,
-  status: PropTypes.string.isRequired
-}
-
-function mapStateToProps(state) {
-  return {
-    isLoading: state.isLoading,
-    status: state.lastError ? '' + state.lastError : 'Done!'
-  }
-}
-
-export default connect(mapStateToProps)(App)
+export default connect()(App)
