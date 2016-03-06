@@ -1,15 +1,37 @@
+import Promise from 'bluebird'
 import { createAction } from 'redux-actions'
 
+const toErrorMsg = xhr => _.trim(xhr.responseText, '\r\n\t ') + ' (' + xhr.statusText + ')'
+const toPromise = url => Promise.resolve($.getJSON(url))
+
 export const INIT_APP = 'INIT_APP'
-export function initApp(defsUrl) {
+export function initApp(listUrl, defsUrl) {
   return dispatch => {
     dispatch(defsLoadStart())
     dispatch(initProgress())
-    return $.getJSON(defsUrl)
-      .done(defs => dispatch(defsLoadSuccess(defs)))
-      .fail(xhr => dispatch(defsLoadFailure(xhr.statusText + ', ' + xhr.responseText)))
+    return Promise.join(
+      toPromise(listUrl).catch(xhr => dispatch(listLoadFailure(toErrorMsg(xhr)))),
+      toPromise(defsUrl).catch(xhr => dispatch(defsLoadFailure(toErrorMsg(xhr)))),
+      (list, defs) => {
+        dispatch(listLoadSuccess(list))
+        dispatch(defsLoadSuccess(defs))
+      }
+    )
   }
 }
+
+// Kanji list loading
+
+export const LIST_LOAD_START = 'LIST_LOAD_START'
+export const listLoadStart = createAction(LIST_LOAD_START)
+
+export const LIST_LOAD_SUCCESS = 'LIST_LOAD_SUCCESS'
+export const listLoadSuccess = createAction(LIST_LOAD_SUCCESS)
+
+export const LIST_LOAD_FAILURE = 'LIST_LOAD_FAILURE'
+export const listLoadFailure = createAction(LIST_LOAD_FAILURE, e => new Error(e))
+
+// Kanji definitions loading
 
 export const DEFS_LOAD_START = 'DEFS_LOAD_START'
 export const defsLoadStart = createAction(DEFS_LOAD_START)
@@ -19,6 +41,8 @@ export const defsLoadSuccess = createAction(DEFS_LOAD_SUCCESS)
 
 export const DEFS_LOAD_FAILURE = 'DEFS_LOAD_FAILURE'
 export const defsLoadFailure = createAction(DEFS_LOAD_FAILURE, e => new Error(e))
+
+// Handling progress, localStorage
 
 function storageAvailable() {
   try {

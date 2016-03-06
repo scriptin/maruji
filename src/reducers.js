@@ -3,9 +3,28 @@ import $ from 'jquery'
 import { combineReducers } from 'redux'
 import { handleActions } from 'redux-actions'
 import {
+  LIST_LOAD_START, LIST_LOAD_SUCCESS, LIST_LOAD_FAILURE,
   DEFS_LOAD_START, DEFS_LOAD_SUCCESS, DEFS_LOAD_FAILURE,
   INIT_PROGRESS_FAILURE, RESET_PROGRESS
 } from './actions'
+
+const list = handleActions({
+  [LIST_LOAD_START]: (state, action) => _.assign({}, state, {
+    isLoading: true
+  }),
+  [LIST_LOAD_SUCCESS]: (state, action) => _.assign({}, state, {
+    isLoading: false,
+    list: action.payload
+  }),
+  [LIST_LOAD_FAILURE]: (state, action) => _.assign({}, state, {
+    isLoading: false,
+    lastError: action.payload.message
+  })
+}, {
+  isLoading: false,
+  lastError: null,
+  list: []
+})
 
 const defs = handleActions({
   [DEFS_LOAD_START]: (state, action) => _.assign({}, state, {
@@ -38,6 +57,7 @@ const progressStorage = handleActions({
 })
 
 const app = combineReducers({
+  list,
   defs,
   progressStorage
 })

@@ -20,4 +20,4 @@ ReactDOM.render(
   document.getElementById('app')
 )
 
-store.dispatch(initApp('kanji-defs.json'))
+store.dispatch(initApp('kanji-list.json', 'kanji-defs.json'))

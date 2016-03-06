@@ -35,6 +35,6 @@ StatusBar.propTypes = {
 }
 
 export default connect(state => ({
-  isLoading: state.defs.isLoading,
+  isLoading: state.defs.isLoading || state.list.isLoading,
   errors: _.map(state, s => s.lastError).filter(e => e != null)
 }))(StatusBar)
