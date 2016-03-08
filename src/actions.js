@@ -51,12 +51,12 @@ function storageAvailable() {
     storage.setItem(x, x);
     storage.removeItem(x);
     return true;
-  } catch(e) {
+  } catch (e) {
     return false;
   }
 }
 
-export function initProgress(defaultProgress = {}) {
+export function initProgress(savedProgress = {}) {
   return dispatch => {
     if ( ! storageAvailable()) {
       return dispatch(initProgressFailure('Local storage is not available in this browser'))
@@ -64,8 +64,8 @@ export function initProgress(defaultProgress = {}) {
     const PROGRESS_STORAGE_KEY = 'progress'
     let progress = localStorage.getItem(PROGRESS_STORAGE_KEY)
     if (progress == null) {
-      localStorage.setItem(PROGRESS_STORAGE_KEY, defaultProgress)
-      progress = defaultProgress
+      localStorage.setItem(PROGRESS_STORAGE_KEY, savedProgress)
+      progress = savedProgress
     }
     return dispatch(resetProgress())
   }
