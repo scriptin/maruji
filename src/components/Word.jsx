@@ -1,20 +1,27 @@
 import React from 'react'
 import TranslationList from './TranslationList'
 
-const renderWriting = (w, hiddenChar) => w.replace(new RegExp(hiddenChar, 'g'), '〇')
+require('../styles/word.less')
 
-const wrapReading = r => '【' + r + '】'
+const renderWriting = (w, hiddenChar) => (
+  <span className='word'>
+    { w.replace(new RegExp(hiddenChar, 'g'), '〇') }
+  </span>
+)
+
+const renderComma = (idx, total) => (idx + 1 < total)
+  ? <span className='text-muted'>{ '、' }</span>
+  : null
+
+const renderReading = (r, idx, total) => (
+  <span key={idx} className={ 'word' + (idx == 0 ? '' : ' text-muted') }>
+    { '【' + r + '】' }{ renderComma(idx, total) }
+  </span>
+)
 
 const renderReadings = readings => (
   <span>
-    { wrapReading(readings[0]) }
-    {
-      (readings.length > 1) ? (
-        <span className='text-muted'>
-          { '、' + _.drop(readings).map(wrapReading).join('、') }
-        </span>
-      ) : null
-    }
+    { readings.map((r, idx) => renderReading(r, idx, readings.length)) }
   </span>
 )
 
