@@ -2,6 +2,7 @@ import _ from 'lodash'
 import React, { PropTypes } from 'react'
 import { connect } from 'react-redux'
 import Alert from './Alert'
+import { isLoading, errors } from '../getters'
 
 function buildAlert(isLoading, errors) {
   let alertClass = (errors.length > 0) ? 'danger' : isLoading ? 'info' : 'success'
@@ -35,6 +36,6 @@ StatusBar.propTypes = {
 }
 
 export default connect(state => ({
-  isLoading: state.defs.isLoading || state.list.isLoading,
-  errors: _.map(state, s => s.lastError).filter(e => e != null)
+  isLoading: isLoading(state),
+  errors: errors(state)
 }))(StatusBar)
