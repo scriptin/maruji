@@ -5,10 +5,10 @@ import { handleActions } from 'redux-actions'
 import {
   LIST_LOAD_START, LIST_LOAD_SUCCESS, LIST_LOAD_FAILURE,
   DEFS_LOAD_START, DEFS_LOAD_SUCCESS, DEFS_LOAD_FAILURE,
-  INIT_PROGRESS_FAILURE, RESET_PROGRESS
+  INIT_PROGRESS_FAILURE, SET_PROGRESS
 } from './actions'
 
-const list = handleActions({
+const kanjiList = handleActions({
   [LIST_LOAD_START]: (state, action) => _.assign({}, state, {
     isLoading: true
   }),
@@ -26,7 +26,7 @@ const list = handleActions({
   list: []
 })
 
-const defs = handleActions({
+const kanjiDefs = handleActions({
   [DEFS_LOAD_START]: (state, action) => _.assign({}, state, {
     isLoading: true
   }),
@@ -48,7 +48,7 @@ const progressStorage = handleActions({
   [INIT_PROGRESS_FAILURE]: (state, action) => _.assign({}, state, {
     lastError: action.payload.message
   }),
-  [RESET_PROGRESS]: (state, action) => _.assign({}, state, {
+  [SET_PROGRESS]: (state, action) => _.assign({}, state, {
     progress: action.payload
   })
 }, {
@@ -56,10 +56,9 @@ const progressStorage = handleActions({
   progress: {}
 })
 
-const app = combineReducers({
-  list,
-  defs,
+
+export default combineReducers({
+  kanjiList,
+  kanjiDefs,
   progressStorage
 })
-
-export default app

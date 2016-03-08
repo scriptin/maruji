@@ -4,7 +4,6 @@ import { createAction } from 'redux-actions'
 const toErrorMsg = xhr => _.trim(xhr.responseText, '\r\n\t ') + ' (' + xhr.statusText + ')'
 const getJSON = url => Promise.resolve($.getJSON(url))
 
-export const INIT_APP = 'INIT_APP'
 export function initApp(listUrl, defsUrl) {
   return dispatch => {
     dispatch(defsLoadStart())
@@ -67,12 +66,12 @@ export function initProgress(savedProgress = {}) {
       localStorage.setItem(PROGRESS_STORAGE_KEY, savedProgress)
       progress = savedProgress
     }
-    return dispatch(resetProgress())
+    return dispatch(setProgress(progress))
   }
 }
 
 export const INIT_PROGRESS_FAILURE = 'INIT_PROGRESS_FAILURE'
 export const initProgressFailure = createAction(INIT_PROGRESS_FAILURE, e => new Error(e))
 
-export const RESET_PROGRESS = 'RESET_PROGRESS'
-export const resetProgress = createAction(RESET_PROGRESS)
+export const SET_PROGRESS = 'SET_PROGRESS'
+export const setProgress = createAction(SET_PROGRESS)
