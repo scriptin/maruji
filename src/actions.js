@@ -2,7 +2,7 @@ import Promise from 'bluebird'
 import { createAction } from 'redux-actions'
 
 const toErrorMsg = xhr => _.trim(xhr.responseText, '\r\n\t ') + ' (' + xhr.statusText + ')'
-const toPromise = url => Promise.resolve($.getJSON(url))
+const getJSON = url => Promise.resolve($.getJSON(url))
 
 export const INIT_APP = 'INIT_APP'
 export function initApp(listUrl, defsUrl) {
@@ -10,8 +10,8 @@ export function initApp(listUrl, defsUrl) {
     dispatch(defsLoadStart())
     dispatch(initProgress())
     return Promise.join(
-      toPromise(listUrl).catch(xhr => dispatch(listLoadFailure(toErrorMsg(xhr)))),
-      toPromise(defsUrl).catch(xhr => dispatch(defsLoadFailure(toErrorMsg(xhr)))),
+      getJSON(listUrl).catch(xhr => dispatch(listLoadFailure(toErrorMsg(xhr)))),
+      getJSON(defsUrl).catch(xhr => dispatch(defsLoadFailure(toErrorMsg(xhr)))),
       (list, defs) => {
         dispatch(listLoadSuccess(list))
         dispatch(defsLoadSuccess(defs))
