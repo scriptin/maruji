@@ -5,7 +5,8 @@ import { handleActions } from 'redux-actions'
 import {
   LIST_LOAD_START, LIST_LOAD_SUCCESS, LIST_LOAD_FAILURE,
   DEFS_LOAD_START, DEFS_LOAD_SUCCESS, DEFS_LOAD_FAILURE,
-  INIT_PROGRESS_FAILURE, SET_PROGRESS
+  INIT_PROGRESS_FAILURE, SET_PROGRESS,
+  ASK_QUESTION
 } from './actions'
 
 const kanjiList = handleActions({
@@ -56,9 +57,13 @@ const progressStorage = handleActions({
   progress: {}
 })
 
+const question = handleActions({
+  [ASK_QUESTION]: (state, action) => _.assign({}, state, action.payload)
+}, null)
 
 export default combineReducers({
   kanjiList,
   kanjiDefs,
-  progressStorage
+  progressStorage,
+  question
 })

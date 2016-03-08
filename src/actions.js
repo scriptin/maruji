@@ -5,7 +5,7 @@ const toErrorMsg = xhr => _.trim(xhr.responseText, '\r\n\t ') + ' (' + xhr.statu
 const getJSON = url => Promise.resolve($.getJSON(url))
 
 export function initApp(listUrl, defsUrl) {
-  return dispatch => {
+  return (dispatch, getState) => {
     dispatch(defsLoadStart())
     dispatch(initProgress())
     return Promise.join(
@@ -14,6 +14,7 @@ export function initApp(listUrl, defsUrl) {
       (list, defs) => {
         dispatch(listLoadSuccess(list))
         dispatch(defsLoadSuccess(defs))
+        dispatch(nextQuestion())
       }
     )
   }
@@ -75,3 +76,37 @@ export const initProgressFailure = createAction(INIT_PROGRESS_FAILURE, e => new 
 
 export const SET_PROGRESS = 'SET_PROGRESS'
 export const setProgress = createAction(SET_PROGRESS)
+
+// Questions
+
+function selectRandomIncluding(list, n, ...including) {
+  let result = [...including]
+  while (result.length < n) {
+    let next = list[_.random(list.length - 1)]
+    if ( ! _.includes(result, next)) result.push(next)
+  }
+  return _.shuffle(result)
+}
+
+function buildQuestion(kanjiList, kanjiDefs, progress) {
+  let kanji = kanjiList[0] // TODO
+  let words = kanjiDefs.kanji[kanji].map(wordId => kanjiDefs.words[wordId])
+  let possibleAnswers = selectRandomIncluding(kanjiList, 8, kanji)
+  return {
+    kanji,
+    possibleAnswers,
+    words
+  }
+}
+
+export function nextQuestion() {
+  return (dispatch, getState) => {
+    let kanjiList = getState().kanjiList.list
+    let kanjiDefs = getState().kanjiDefs.defs
+    let progress = getState().progressStorage.progress
+    return dispatch(askQuestion(buildQuestion(kanjiList, kanjiDefs, progress)))
+  }
+}
+
+export const ASK_QUESTION = 'ASK_QUESTION'
+export const askQuestion = createAction(ASK_QUESTION)

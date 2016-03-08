@@ -1,0 +1,40 @@
+import React, { PropTypes } from 'react'
+import { connect } from 'react-redux'
+import WordList from './WordList'
+
+function displayQuestion(isLoading, question) {
+  if (isLoading) return 'Loading...'
+  return <WordList words={question.words} hiddenChar={question.kanji} />
+}
+
+const WorkingArea = ({ isLoading, question }) => (
+  <div className="container">
+    <div className="row">
+      <div className="col-md-12">
+        { displayQuestion(isLoading, question) }
+      </div>
+    </div>
+  </div>
+)
+
+WorkingArea.propTypes = {
+  isLoading: PropTypes.bool.isRequired,
+  question: PropTypes.shape({
+    kanji: PropTypes.string.isRequired,
+    possibleAnswers: PropTypes.arrayOf(PropTypes.string),
+    words: PropTypes.arrayOf(PropTypes.shape({
+      w: PropTypes.string.isRequired,
+      r: PropTypes.arrayOf(PropTypes.string).isRequired,
+      t: PropTypes.arrayOf(PropTypes.shape({
+        pos: PropTypes.arrayOf(PropTypes.string).isRequired,
+        forKana: PropTypes.arrayOf(PropTypes.string).isRequired,
+        gloss: PropTypes.arrayOf(PropTypes.string).isRequired
+      })).isRequired
+    })).isRequired
+  })
+}
+
+export default connect(state => ({
+  isLoading: !state.question,
+  question: state.question
+}))(WorkingArea)
