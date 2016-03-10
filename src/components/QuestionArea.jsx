@@ -29,7 +29,7 @@ QuestionArea.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   question: PropTypes.shape({
     kanji: PropTypes.string.isRequired,
-    possibleAnswers: PropTypes.arrayOf(PropTypes.string),
+    possibleAnswers: PropTypes.arrayOf(PropTypes.string).isRequired,
     words: PropTypes.arrayOf(PropTypes.shape({
       w: PropTypes.string.isRequired,
       r: PropTypes.arrayOf(PropTypes.string).isRequired,
