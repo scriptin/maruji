@@ -9,15 +9,9 @@ const renderWriting = (w, hiddenChar) => (
   </span>
 )
 
-const renderComma = (idx, total) => {
-  if (idx + 1 < total) return (
-    <span className="text-muted">、</span>
-  )
-}
-
 const renderReading = (r, idx, total) => (
   <span key={idx} className={ 'word' + (idx == 0 ? '' : ' text-muted') }>
-    { '【' + r + '】' }{ renderComma(idx, total) }
+    { '【' + r + '】' }
   </span>
 )
 
@@ -27,13 +21,18 @@ const renderReadings = readings => (
   </span>
 )
 
-const Word = ({ num, word, hiddenChar }) => (
-  <tr>
-    <td> { renderWriting(word.w, hiddenChar) }{ renderReadings(word.r) } </td>
-    <td>
+const Word = ({ word, hiddenChar }) => (
+  <div className="panel panel-default">
+    <div className="panel-heading">
+      <h3 className="panel-title">
+        { renderWriting(word.w, hiddenChar) }
+        { renderReadings(word.r) }
+      </h3>
+    </div>
+    <div className="panel-body">
       <TranslationList translations={word.t} />
-    </td>
-  </tr>
+    </div>
+  </div>
 )
 
 export default Word

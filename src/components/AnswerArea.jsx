@@ -15,7 +15,7 @@ function displayAnswers(isLoading, possibleAnswers) {
 const AnswerArea = ({ isLoading, possibleAnswers }) => (
   <div className="container">
     <div className="row">
-      <div className="col-md-12">
+      <div className="col-md-12 text-center">
         { displayAnswers(isLoading, possibleAnswers) }
       </div>
     </div>

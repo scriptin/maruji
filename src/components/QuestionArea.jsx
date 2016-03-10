@@ -17,11 +17,7 @@ function displayQuestion(isLoading, question) {
 
 const QuestionArea = ({ isLoading, question }) => (
   <div className="container">
-    <div className="row">
-      <div className="col-md-12">
-        { displayQuestion(isLoading, question) }
-      </div>
-    </div>
+    { displayQuestion(isLoading, question) }
   </div>
 )
 

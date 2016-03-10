@@ -1,7 +1,7 @@
 import React, { PropTypes } from 'react'
 
 const AnswerButton = ({ text }) => (
-  <button className="btn btn-default btn-lg">
+  <button className="btn btn-primary btn-lg">
     { text }
   </button>
 )
