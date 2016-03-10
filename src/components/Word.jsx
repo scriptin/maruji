@@ -4,14 +4,16 @@ import TranslationList from './TranslationList'
 require('../styles/word.less')
 
 const renderWriting = (w, hiddenChar) => (
-  <span className='word'>
+  <span className="word">
     { w.replace(new RegExp(hiddenChar, 'g'), '〇') }
   </span>
 )
 
-const renderComma = (idx, total) => (idx + 1 < total)
-  ? <span className='text-muted'>{ '、' }</span>
-  : null
+const renderComma = (idx, total) => {
+  if (idx + 1 < total) return (
+    <span className="text-muted">、</span>
+  )
+}
 
 const renderReading = (r, idx, total) => (
   <span key={idx} className={ 'word' + (idx == 0 ? '' : ' text-muted') }>

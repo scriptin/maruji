@@ -3,11 +3,19 @@ import { connect } from 'react-redux'
 import WordList from './WordList'
 
 function displayQuestion(isLoading, question) {
-  if (isLoading) return 'Loading...'
+  if (isLoading) return (
+    <div className="progress">
+      <div className="progress-bar progress-bar-striped active" role="progressbar"
+        aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+        style={{width: '100%'}}>
+        <span className="sr-only">Loading...</span>
+      </div>
+    </div>
+  )
   return <WordList words={question.words} hiddenChar={question.kanji} />
 }
 
-const WorkingArea = ({ isLoading, question }) => (
+const QuestionArea = ({ isLoading, question }) => (
   <div className="container">
     <div className="row">
       <div className="col-md-12">
@@ -17,7 +25,7 @@ const WorkingArea = ({ isLoading, question }) => (
   </div>
 )
 
-WorkingArea.propTypes = {
+QuestionArea.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   question: PropTypes.shape({
     kanji: PropTypes.string.isRequired,
@@ -37,4 +45,4 @@ WorkingArea.propTypes = {
 export default connect(state => ({
   isLoading: !state.question,
   question: state.question
-}))(WorkingArea)
+}))(QuestionArea)
