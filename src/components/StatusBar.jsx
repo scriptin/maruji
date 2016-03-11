@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import Alert from './Alert'
 import { isLoading, errors } from '../getters'
 
-function buildAlert(isLoading, errors) {
+const StatusBar = ({ isLoading, errors }) => {
   let alertClass = (errors.length > 0) ? 'danger' : isLoading ? 'info' : 'success'
   let contents
   if (errors.length > 0) {
@@ -19,16 +19,6 @@ function buildAlert(isLoading, errors) {
   }
   return <Alert alertClass={ alertClass }> { contents } </Alert>
 }
-
-const StatusBar = ({ isLoading, errors }) => (
-  <div className="container">
-    <div className="row">
-      <div className="col-md-12">
-        { buildAlert(isLoading, errors) }
-      </div>
-    </div>
-  </div>
-)
 
 StatusBar.propTypes = {
   isLoading: PropTypes.bool.isRequired,

@@ -1,5 +1,4 @@
 import React, { PropTypes } from 'react'
-import { connect } from 'react-redux'
 
 const Header = ({ isLoading, status }) => (
   <nav className="navbar navbar-inverse navbar-static-top">
@@ -11,4 +10,4 @@ const Header = ({ isLoading, status }) => (
   </nav>
 )
 
-export default connect()(Header)
+export default Header

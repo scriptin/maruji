@@ -1,26 +1,16 @@
 import React, { PropTypes } from 'react'
 import { connect } from 'react-redux'
 import AnswerButton from './AnswerButton'
+import ProgressBar from './ProgressBar'
 
-function displayAnswers(isLoading, possibleAnswers) {
-  if ( ! isLoading) {
-    return (
-      <div className="btn-group" role="group">
-        { possibleAnswers.map((answer, idx) => <AnswerButton key={idx} text={answer} />) }
-      </div>
-    )
-  }
-}
-
-const AnswerArea = ({ isLoading, possibleAnswers }) => (
-  <div className="container">
-    <div className="row">
-      <div className="col-md-12 text-center">
-        { displayAnswers(isLoading, possibleAnswers) }
-      </div>
+const AnswerArea = ({ isLoading, possibleAnswers }) => {
+  if (isLoading) return <ProgressBar />
+  return (
+    <div className="btn-group" role="group">
+      { possibleAnswers.map((answer, idx) => <AnswerButton key={idx} text={answer} />) }
     </div>
-  </div>
-)
+  )
+}
 
 AnswerArea.propTypes = {
   isLoading: PropTypes.bool.isRequired,

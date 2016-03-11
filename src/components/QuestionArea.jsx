@@ -1,25 +1,12 @@
 import React, { PropTypes } from 'react'
 import { connect } from 'react-redux'
 import WordList from './WordList'
+import ProgressBar from './ProgressBar'
 
-function displayQuestion(isLoading, question) {
-  if (isLoading) return (
-    <div className="progress">
-      <div className="progress-bar progress-bar-striped active" role="progressbar"
-        aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
-        style={{width: '100%'}}>
-        <span className="sr-only">Loading...</span>
-      </div>
-    </div>
-  )
+const QuestionArea = ({ isLoading, question }) => {
+  if (isLoading) return <ProgressBar />
   return <WordList words={question.words} hiddenChar={question.kanji} />
 }
-
-const QuestionArea = ({ isLoading, question }) => (
-  <div className="container">
-    { displayQuestion(isLoading, question) }
-  </div>
-)
 
 QuestionArea.propTypes = {
   isLoading: PropTypes.bool.isRequired,
