@@ -1,13 +1,18 @@
 import React, { PropTypes } from 'react'
 import { connect } from 'react-redux'
-import AnswerButton from './AnswerButton'
+import SvgButton from './SvgButton'
 import ProgressBar from './ProgressBar'
+
+const kanjiCode = kanji => _.padStart(kanji.charCodeAt(0).toString(16), 5, '0')
 
 const AnswerArea = ({ isLoading, possibleAnswers }) => {
   if (isLoading) return <ProgressBar />
   return (
-    <div className="btn-group" role="group">
-      { possibleAnswers.map((answer, idx) => <AnswerButton key={idx} text={answer} />) }
+    <div>
+      { possibleAnswers.map((answer, idx) => {
+        let code = kanjiCode(answer)
+        return <SvgButton key={idx} code={code} url={ '/kanjivg/' + code + '.svg' } />
+      }) }
     </div>
   )
 }
