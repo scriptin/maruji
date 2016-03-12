@@ -6,7 +6,7 @@ import {
   LIST_LOAD_START, LIST_LOAD_SUCCESS, LIST_LOAD_FAILURE,
   DEFS_LOAD_START, DEFS_LOAD_SUCCESS, DEFS_LOAD_FAILURE,
   INIT_PROGRESS_FAILURE, SET_PROGRESS,
-  ASK_QUESTION
+  ASK_QUESTION, SVG_LOAD_FAILURE
 } from './actions'
 
 const kanjiList = handleActions({
@@ -58,8 +58,16 @@ const progressStorage = handleActions({
 })
 
 const question = handleActions({
-  [ASK_QUESTION]: (state, action) => _.assign({}, state, action.payload)
-}, null)
+  [ASK_QUESTION]: (state, action) => _.assign({}, state, {
+    question: action.payload
+  }),
+  [SVG_LOAD_FAILURE]: (state, action) => _.assign({}, state, {
+    lastError: action.payload.message
+  })
+}, {
+  lastError: null,
+  question: null
+})
 
 export default combineReducers({
   kanjiList,

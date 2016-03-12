@@ -1,8 +1,15 @@
+import _ from 'lodash'
+import $ from 'jquery'
 import Promise from 'bluebird'
 import { createAction } from 'redux-actions'
+import * as util from './util'
 
 const toErrorMsg = xhr => _.trim(xhr.responseText, '\r\n\t ') + ' (' + xhr.statusText + ')'
 const getJSON = url => Promise.resolve($.getJSON(url))
+const getPlainText = url => Promise.resolve($.get({
+  url,
+  dataType: 'text'
+}))
 
 export function initApp(listUrl, defsUrl) {
   return (dispatch, getState) => {
@@ -88,10 +95,12 @@ function selectRandomIncluding(list, n, ...including) {
   return _.shuffle(result)
 }
 
+const KANJI_TO_FETCH = 4
+
 function buildQuestion(kanjiList, kanjiDefs, progress) {
-  let kanji = kanjiList[0] // TODO
+  let kanji = kanjiList[(Math.random() * kanjiList.length) | 0] // TODO
   let words = kanjiDefs.kanji[kanji].map(wordId => kanjiDefs.words[wordId])
-  let possibleAnswers = selectRandomIncluding(kanjiList, 8, kanji)
+  let possibleAnswers = selectRandomIncluding(kanjiList, KANJI_TO_FETCH, kanji)
   return {
     kanji,
     possibleAnswers,
@@ -104,9 +113,23 @@ export function nextQuestion() {
     let kanjiList = getState().kanjiList.list
     let kanjiDefs = getState().kanjiDefs.defs
     let progress = getState().progressStorage.progress
-    return dispatch(askQuestion(buildQuestion(kanjiList, kanjiDefs, progress)))
+    let question = buildQuestion(kanjiList, kanjiDefs, progress)
+    return Promise.map(question.possibleAnswers, kanji => {
+      return getPlainText('kanjivg/' + util.kanjiCode(kanji) + '.svg')
+        .then(svg => [kanji, $(svg).last()])
+        .catch(xhr => dispatch(svgLoadFailure(toErrorMsg(xhr))))
+    }).then(svgs => {
+      return dispatch(
+        askQuestion(_.assign({}, question, {
+          possibleAnswers: _.fromPairs(svgs)
+        }))
+      )
+    })
   }
 }
 
 export const ASK_QUESTION = 'ASK_QUESTION'
 export const askQuestion = createAction(ASK_QUESTION)
+
+export const SVG_LOAD_FAILURE = 'SVG_LOAD_FAILURE'
+export const svgLoadFailure = createAction(SVG_LOAD_FAILURE, e => new Error(e))
