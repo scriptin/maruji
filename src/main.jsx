@@ -13,7 +13,7 @@ import 'expose?$!expose?jQuery!jquery'
 import 'bootstrap-webpack'
 
 const logger = createLogger()
-const store = createStore(app, applyMiddleware(thunkMiddleware, logger))
+const store = createStore(app, applyMiddleware(logger, thunkMiddleware))
 
 ReactDOM.render(
   <Provider store={store}>
