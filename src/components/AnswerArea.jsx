@@ -5,14 +5,19 @@ import SvgButton from './SvgButton'
 import ProgressBar from './ProgressBar'
 import * as util from '../util'
 
+const preprocessSvg = (svg, size) => {
+  svg.attr({ width: size, height: size })
+  svg.find('> g:nth-child(2)').remove() // remove stroke numbers
+  return svg
+}
+
 const AnswerArea = ({ isLoading, possibleAnswers }) => {
   if (isLoading) return <ProgressBar />
   return (
     <div>
-      { _.keys(possibleAnswers).map((kanji, idx) => {
-        let code = util.kanjiCode(kanji)
-        return <SvgButton key={idx} code={code} svg={possibleAnswers[kanji]} />
-      }) }
+      { _.keys(possibleAnswers).map((kanji, idx) =>
+        <SvgButton key={idx} svg={preprocessSvg(possibleAnswers[kanji], 80)} />
+      ) }
     </div>
   )
 }

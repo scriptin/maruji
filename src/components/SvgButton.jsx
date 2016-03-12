@@ -3,22 +3,14 @@ import $ from 'jquery'
 
 require('../styles/btn-svg.less')
 
-const preprocessSvg = (svg, size) => {
-  svg.attr({ width: size, height: size })
-  svg.find('> g:nth-child(2)').remove() // remove stroke numbers
-  return svg
-}
-
-const SvgButton = ({ svg, code, size = 80 }) => (
+const SvgButton = ({ svg }) => (
   <button className="btn btn-default btn-svg"
-    dangerouslySetInnerHTML={{__html: preprocessSvg(svg, size).prop('outerHTML')}}
+    dangerouslySetInnerHTML={{__html: svg.prop('outerHTML')}}
   />
 )
 
 SvgButton.propTypes = {
-  svg: PropTypes.object.isRequired,
-  code: PropTypes.string.isRequired,
-  size: PropTypes.number
+  svg: PropTypes.object.isRequired
 }
 
 export default SvgButton
