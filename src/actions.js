@@ -17,8 +17,12 @@ export function initApp(listUrl, defsUrl) {
     dispatch(defsLoadStart())
     dispatch(initProgress())
     return Promise.join(
-      getJSON(listUrl).catch(xhr => dispatch(listLoadFailure(toErrorMsg(xhr)))),
-      getJSON(defsUrl).catch(xhr => dispatch(defsLoadFailure(toErrorMsg(xhr)))),
+      getJSON(listUrl)
+        .catch(Error, e => dispatch(listLoadFailure(e.message)))
+        .catch(xhr => dispatch(listLoadFailure(toErrorMsg(xhr)))),
+      getJSON(defsUrl)
+        .catch(Error, e => dispatch(defsLoadFailure(e.message)))
+        .catch(xhr => dispatch(defsLoadFailure(toErrorMsg(xhr)))),
       (list, defs) => {
         dispatch(listLoadSuccess(list))
         dispatch(defsLoadSuccess(defs))
@@ -121,6 +125,7 @@ export function nextQuestion() {
           svg: svgUtil.preprocess($(svg).last()),
           isCorrect: kanji == question.kanji
         }))
+        .catch(Error, e => dispatch(svgLoadFailure(e.message)))
         .catch(xhr => dispatch(svgLoadFailure(toErrorMsg(xhr))))
     }).then(answerOptions => dispatch(
       askQuestion(_.assign({}, {
