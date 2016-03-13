@@ -3,6 +3,7 @@ import $ from 'jquery'
 import Promise from 'bluebird'
 import { createAction } from 'redux-actions'
 import * as util from './util'
+import * as svgUtil from './svg'
 
 const toErrorMsg = xhr => _.trim(xhr.responseText, '\r\n\t ') + ' (' + xhr.statusText + ')'
 const getJSON = url => Promise.resolve($.getJSON(url))
@@ -100,11 +101,11 @@ const KANJI_TO_FETCH = 4
 function buildQuestion(kanjiList, kanjiDefs, progress) {
   let kanji = kanjiList[(Math.random() * kanjiList.length) | 0] // TODO
   let words = kanjiDefs.kanji[kanji].map(wordId => kanjiDefs.words[wordId])
-  let possibleAnswers = selectRandomIncluding(kanjiList, KANJI_TO_FETCH, kanji)
+  let kanjiOptions = selectRandomIncluding(kanjiList, KANJI_TO_FETCH, kanji)
   return {
     kanji,
-    possibleAnswers,
-    words
+    words,
+    kanjiOptions
   }
 }
 
@@ -114,17 +115,20 @@ export function nextQuestion() {
     let kanjiDefs = getState().kanjiDefs.defs
     let progress = getState().progressStorage.progress
     let question = buildQuestion(kanjiList, kanjiDefs, progress)
-    return Promise.map(question.possibleAnswers, kanji => {
+    return Promise.map(question.kanjiOptions, kanji => {
       return getPlainText('kanjivg/' + util.kanjiCode(kanji) + '.svg')
-        .then(svg => [kanji, $(svg).last()])
-        .catch(xhr => dispatch(svgLoadFailure(toErrorMsg(xhr))))
-    }).then(svgs => {
-      return dispatch(
-        askQuestion(_.assign({}, question, {
-          possibleAnswers: _.fromPairs(svgs)
+        .then(svg => ({
+          svg: svgUtil.preprocess($(svg).last()),
+          isCorrect: kanji == question.kanji
         }))
-      )
-    })
+        .catch(xhr => dispatch(svgLoadFailure(toErrorMsg(xhr))))
+    }).then(answerOptions => dispatch(
+      askQuestion(_.assign({}, {
+        kanji: question.kanji,
+        words: question.words,
+        answerOptions
+      }))
+    ))
   }
 }
 

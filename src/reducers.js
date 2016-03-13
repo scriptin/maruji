@@ -58,15 +58,15 @@ const progressStorage = handleActions({
 })
 
 const question = handleActions({
-  [ASK_QUESTION]: (state, action) => _.assign({}, state, {
-    question: action.payload
-  }),
+  [ASK_QUESTION]: (state, action) => _.assign({}, state, action.payload),
   [SVG_LOAD_FAILURE]: (state, action) => _.assign({}, state, {
     lastError: action.payload.message
   })
 }, {
   lastError: null,
-  question: null
+  kanji: null,
+  words: null,
+  answerOptions: null
 })
 
 export default combineReducers({
