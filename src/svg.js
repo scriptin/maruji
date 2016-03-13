@@ -12,8 +12,6 @@ export const preprocess = svg => {
   svg.find('> g:nth-child(2)').remove()
   // remove inline styles from strokes, add a class instead:
   svg.find('> g').removeAttr('style').addClass('strokes')
-  // remove all ids:
-  svg.find('[id]').removeAttr('id')
   return svg
 }
 
@@ -22,5 +20,7 @@ export const postprocess = (svg, size) => {
   svg.prepend(buildFrame(svg.attr('width'), svg.attr('height')))
   // set class and adjust attributes of a root element:
   svg.addClass('kanji-svg').attr({ width: size, height: size })
+  // remove all ids:
+  svg.find('[id]').removeAttr('id')
   return svg
 }
