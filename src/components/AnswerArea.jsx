@@ -20,7 +20,7 @@ const preprocessSvg = (svg, size) => {
   // remove stroke numbers:
   svg.find('> g:nth-child(2)').remove()
   // remove inline styles from strokes, add a class instead:
-  svg.find('> g:nth-child(2)').removeAttr('style').addClass('strokes')
+  svg.find('> g').removeAttr('style').addClass('strokes')
   // add frame:
   svg.prepend(buildFrame(svg.attr('width'), svg.attr('height')))
   // set class and adjust attributes of a root element:
