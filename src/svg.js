@@ -1,3 +1,5 @@
+import _ from 'lodash'
+
 const buildFrame = (width, height) => {
   let w = width - 1
   let h = height - 1
@@ -24,3 +26,68 @@ export const postprocess = (svg, size) => {
   svg.find('[id]').removeAttr('id')
   return svg
 }
+
+const GROUP_ATTRS = {
+  element: _.identity,
+  variant: v => new Boolean(v).valueOf(),
+  radical: _.identity,
+  original: _.identity,
+  position: _.identity,
+  partial: v => new Boolean(v).valueOf(),
+  part: v => new Number(v).valueOf(),
+  number: v => new Number(v).valueOf()
+}
+
+const convertAttributes = (attrs, whitelist) => {
+  return _(attrs).values()
+    .map(({ name, value }) => ({ name: name.replace('kvg:', ''), value }))
+    .filter(({ name, value }) => _.includes(_.keys(whitelist), name))
+    .map(({ name, value }) => [name, whitelist[name](value)])
+    .fromPairs()
+    .value()
+}
+
+const TYPE_GROUP = 'group'
+const TYPE_STROKE = 'stroke'
+
+const compactStrokeChildren = children => children.reduce((acc, c) => {
+  let previous = _.last(acc)
+  if (c.type == TYPE_STROKE && previous && previous.type == TYPE_STROKE) {
+    return _.initial(acc).concat([
+      _.assign({}, previous, { count: previous.count + 1 })
+    ])
+  }
+  return acc.concat([c])
+}, [])
+
+// root is passed only for error messages
+const getMeta = (elems, root) => elems.map(el => {
+  let elem = $(el)
+  let type = elem.prop('tagName')
+  switch (type) {
+    case 'g':
+      let attrs = convertAttributes(el.attributes, GROUP_ATTRS)
+      let children = compactStrokeChildren(getMeta(elem.children().toArray()), root)
+      let isElement = _.has(attrs, 'element')
+      let containsStrokes = children.find(c => c.type == TYPE_STROKE) != null
+      let containsPartialGroups = children.find(c =>
+        c.type == TYPE_GROUP && (c.attrs.partial || c.attrs.part || c.attrs.number)
+      ) != null
+      return {
+        type: TYPE_GROUP,
+        id: elem.attr('id'),
+        decomposable: isElement && !containsStrokes && !containsPartialGroups,
+        attrs,
+        children
+      }
+    case 'path': return {
+      type: TYPE_STROKE,
+      count: 1
+    }
+    default: throw new Error(
+      'Unexpected tag "' + type + '" in kanji "' + $(root).attr('kvg\\:element') + '"'
+    )
+  }
+})
+
+export const getMetadata = svg => getMeta(svg.find('.strokes > g').toArray(), svg)[0]
