@@ -14,6 +14,8 @@ export const preprocess = svg => {
   svg.find('> g:nth-child(2)').remove()
   // remove inline styles from strokes, add a class instead:
   svg.find('> g').removeAttr('style').addClass('strokes')
+  // add ordinal numbers to strokes:
+  svg.find('path').toArray().forEach((el, idx) => $(el).attr('data-order', idx + 1))
   return svg
 }
 
