@@ -6,17 +6,24 @@ import * as util from './util'
 import * as svgUtil from './svg'
 import { buildQuestion } from './question'
 
+// Errors
+
+export const REPORT_ERROR = 'REPORT_ERROR'
+export const reportError = createAction(REPORT_ERROR, e => e instanceof Error ? e : new Error(e))
+
+// Initialization
+
 export function initApp(listUrl, defsUrl) {
   return (dispatch, getState) => {
     dispatch(defsLoadStart())
     dispatch(initProgress())
     return Promise.join(
       util.getJSON(listUrl)
-        .catch(Error, e => dispatch(listLoadFailure(e.message)))
-        .catch(xhr => dispatch(listLoadFailure(util.xhrToErrorMsg(xhr)))),
+        .catch(Error, e => dispatch(reportError(e)))
+        .catch(xhr => dispatch(reportError(util.xhrToErrorMsg(xhr)))),
       util.getJSON(defsUrl)
-        .catch(Error, e => dispatch(defsLoadFailure(e.message)))
-        .catch(xhr => dispatch(defsLoadFailure(util.xhrToErrorMsg(xhr)))),
+        .catch(Error, e => dispatch(reportError(e)))
+        .catch(xhr => dispatch(reportError(util.xhrToErrorMsg(xhr)))),
       (list, defs) => {
         dispatch(listLoadSuccess(list))
         dispatch(defsLoadSuccess(defs))
@@ -34,9 +41,6 @@ export const listLoadStart = createAction(LIST_LOAD_START)
 export const LIST_LOAD_SUCCESS = 'LIST_LOAD_SUCCESS'
 export const listLoadSuccess = createAction(LIST_LOAD_SUCCESS)
 
-export const LIST_LOAD_FAILURE = 'LIST_LOAD_FAILURE'
-export const listLoadFailure = createAction(LIST_LOAD_FAILURE, e => new Error(e))
-
 // Kanji definitions loading
 
 export const DEFS_LOAD_START = 'DEFS_LOAD_START'
@@ -44,9 +48,6 @@ export const defsLoadStart = createAction(DEFS_LOAD_START)
 
 export const DEFS_LOAD_SUCCESS = 'DEFS_LOAD_SUCCESS'
 export const defsLoadSuccess = createAction(DEFS_LOAD_SUCCESS)
-
-export const DEFS_LOAD_FAILURE = 'DEFS_LOAD_FAILURE'
-export const defsLoadFailure = createAction(DEFS_LOAD_FAILURE, e => new Error(e))
 
 // Handling progress, localStorage
 
@@ -65,7 +66,7 @@ function storageAvailable() {
 export function initProgress(savedProgress = {}) {
   return dispatch => {
     if ( ! storageAvailable()) {
-      return dispatch(initProgressFailure('Local storage is not available in this browser'))
+      return dispatch(reportError('Local storage is not available in this browser'))
     }
     const PROGRESS_STORAGE_KEY = 'progress'
     let progress = localStorage.getItem(PROGRESS_STORAGE_KEY)
@@ -76,9 +77,6 @@ export function initProgress(savedProgress = {}) {
     return dispatch(setProgress(progress))
   }
 }
-
-export const INIT_PROGRESS_FAILURE = 'INIT_PROGRESS_FAILURE'
-export const initProgressFailure = createAction(INIT_PROGRESS_FAILURE, e => new Error(e))
 
 export const SET_PROGRESS = 'SET_PROGRESS'
 export const setProgress = createAction(SET_PROGRESS)
@@ -101,20 +99,19 @@ export function nextQuestion() {
             isCorrect: kanji == question.kanji
           }
         })
-        .catch(Error, e => dispatch(svgLoadFailure(e.message)))
-        .catch(xhr => dispatch(svgLoadFailure(util.xhrToErrorMsg(xhr))))
-    }).then(answerOptions => dispatch(
+        .catch(Error, e => dispatch(reportError(e)))
+        .catch(xhr => dispatch(reportError(util.xhrToErrorMsg(xhr))))
+    })
+    .then(answerOptions => dispatch(
       askQuestion(_.assign({}, {
         kanji: question.kanji,
         words: question.words,
         answerOptions
       }))
     ))
+    .catch(e => dispatch(reportError(e)))
   }
 }
 
 export const ASK_QUESTION = 'ASK_QUESTION'
 export const askQuestion = createAction(ASK_QUESTION)
-
-export const SVG_LOAD_FAILURE = 'SVG_LOAD_FAILURE'
-export const svgLoadFailure = createAction(SVG_LOAD_FAILURE, e => new Error(e))
