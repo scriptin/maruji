@@ -79,7 +79,7 @@ const getMeta = (elems, root) => elems.map(el => {
       strokeCount: 1
     }
     default: throw new Error(
-      'Unexpected tag "' + type + '" in kanji "' + $(root).attr('kvg\\:element') + '"'
+      'Unexpected tag "' + type + '" in kanji "' + root.attr('kvg\\:element') + '"'
     )
   }
 })
