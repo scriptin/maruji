@@ -121,10 +121,14 @@ export function nextQuestion() {
     let question = buildQuestion(kanjiList, kanjiDefs, progress)
     return Promise.map(question.kanjiOptions, kanji => {
       return getPlainText('kanjivg/' + util.kanjiCode(kanji) + '.svg')
-        .then(svg => ({
-          svg: svgUtil.preprocess($(svg).last()),
-          isCorrect: kanji == question.kanji
-        }))
+        .then(svgPlainText => {
+          let svg = svgUtil.preprocess($(svgPlainText).last())
+          return {
+            svg,
+            meta: svgUtil.getMetadata(svg),
+            isCorrect: kanji == question.kanji
+          }
+        })
         .catch(Error, e => dispatch(svgLoadFailure(e.message)))
         .catch(xhr => dispatch(svgLoadFailure(toErrorMsg(xhr))))
     }).then(answerOptions => dispatch(

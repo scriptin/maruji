@@ -52,16 +52,6 @@ const convertAttributes = (attrs, whitelist) => {
 const TYPE_GROUP = 'group'
 const TYPE_STROKE = 'stroke'
 
-const compactStrokeChildren = children => children.reduce((acc, c) => {
-  let previous = _.last(acc)
-  if (c.type == TYPE_STROKE && previous && previous.type == TYPE_STROKE) {
-    return _.initial(acc).concat([
-      _.assign({}, previous, { count: previous.count + 1 })
-    ])
-  }
-  return acc.concat([c])
-}, [])
-
 // root is passed only for error messages
 const getMeta = (elems, root) => elems.map(el => {
   let elem = $(el)
@@ -69,7 +59,7 @@ const getMeta = (elems, root) => elems.map(el => {
   switch (type) {
     case 'g':
       let attrs = convertAttributes(el.attributes, GROUP_ATTRS)
-      let children = compactStrokeChildren(getMeta(elem.children().toArray()), root)
+      let children = getMeta(elem.children().toArray(), root)
       let isElement = _.has(attrs, 'element')
       let containsStrokes = children.find(c => c.type == TYPE_STROKE) != null
       let containsPartialGroups = children.find(c =>
@@ -79,12 +69,14 @@ const getMeta = (elems, root) => elems.map(el => {
         type: TYPE_GROUP,
         id: elem.attr('id'),
         decomposable: isElement && !containsStrokes && !containsPartialGroups,
+        strokeCount: _.sum(children.map(c => c.strokeCount)),
         attrs,
         children
       }
     case 'path': return {
       type: TYPE_STROKE,
-      count: 1
+      id: elem.attr('id'),
+      strokeCount: 1
     }
     default: throw new Error(
       'Unexpected tag "' + type + '" in kanji "' + $(root).attr('kvg\\:element') + '"'
