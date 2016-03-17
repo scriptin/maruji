@@ -15,6 +15,7 @@ export const reportError = createAction(REPORT_ERROR, e => e instanceof Error ? 
 
 export function initApp(listUrl, defsUrl) {
   return (dispatch, getState) => {
+    dispatch(listLoadStart())
     dispatch(defsLoadStart())
     dispatch(initProgress())
     return Promise.join(
@@ -25,8 +26,8 @@ export function initApp(listUrl, defsUrl) {
         .catch(Error, e => dispatch(reportError(e)))
         .catch(xhr => dispatch(reportError(util.xhrToErrorMsg(xhr)))),
       (list, defs) => {
-        dispatch(listLoadSuccess(list))
-        dispatch(defsLoadSuccess(defs))
+        dispatch(listLoadEnd(list))
+        dispatch(defsLoadEnd(defs))
         dispatch(nextQuestion())
       }
     )
@@ -38,16 +39,16 @@ export function initApp(listUrl, defsUrl) {
 export const LIST_LOAD_START = 'LIST_LOAD_START'
 export const listLoadStart = createAction(LIST_LOAD_START)
 
-export const LIST_LOAD_SUCCESS = 'LIST_LOAD_SUCCESS'
-export const listLoadSuccess = createAction(LIST_LOAD_SUCCESS)
+export const LIST_LOAD_END = 'LIST_LOAD_END'
+export const listLoadEnd = createAction(LIST_LOAD_END)
 
 // Kanji definitions loading
 
 export const DEFS_LOAD_START = 'DEFS_LOAD_START'
 export const defsLoadStart = createAction(DEFS_LOAD_START)
 
-export const DEFS_LOAD_SUCCESS = 'DEFS_LOAD_SUCCESS'
-export const defsLoadSuccess = createAction(DEFS_LOAD_SUCCESS)
+export const DEFS_LOAD_END = 'DEFS_LOAD_END'
+export const defsLoadEnd = createAction(DEFS_LOAD_END)
 
 // Handling progress, localStorage
 

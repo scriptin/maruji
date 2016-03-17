@@ -4,8 +4,8 @@ import { combineReducers } from 'redux'
 import { handleActions } from 'redux-actions'
 import {
   REPORT_ERROR,
-  LIST_LOAD_START, LIST_LOAD_SUCCESS,
-  DEFS_LOAD_START, DEFS_LOAD_SUCCESS,
+  LIST_LOAD_START, LIST_LOAD_END,
+  DEFS_LOAD_START, DEFS_LOAD_END,
   SET_PROGRESS,
   ASK_QUESTION
 } from './actions'
@@ -25,7 +25,7 @@ const kanjiList = handleActions({
   [LIST_LOAD_START]: (state, action) => _.assign({}, state, {
     isLoading: true
   }),
-  [LIST_LOAD_SUCCESS]: (state, action) => _.assign({}, state, {
+  [LIST_LOAD_END]: (state, action) => _.assign({}, state, {
     isLoading: false,
     list: action.payload
   })
@@ -38,7 +38,7 @@ const kanjiDefs = handleActions({
   [DEFS_LOAD_START]: (state, action) => _.assign({}, state, {
     isLoading: true
   }),
-  [DEFS_LOAD_SUCCESS]: (state, action) => _.assign({}, state, {
+  [DEFS_LOAD_END]: (state, action) => _.assign({}, state, {
     isLoading: false,
     defs: action.payload
   })
