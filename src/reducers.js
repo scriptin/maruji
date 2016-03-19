@@ -7,8 +7,9 @@ import {
   LIST_LOAD_START, LIST_LOAD_END,
   DEFS_LOAD_START, DEFS_LOAD_END,
   SET_PROGRESS,
-  ASK_QUESTION
+  ASK_QUESTION, GIVE_ANSWER
 } from './actions'
+import { QUESTION_TYPE_STROKE_ORDER, QUESTION_TYPE_COMPONENTS } from './question'
 
 const errors = handleActions({
   [REPORT_ERROR]: (state, action) => {
@@ -55,13 +56,61 @@ const progressStorage = handleActions({
   progress: {}
 })
 
+function strokeOrderCorrect(state, action, optionIdx) {
+  let updatedAnswerOption = _.assign({}, state.answerOptions[optionIdx], {
+    answered: true,
+    correct: true,
+    active: false
+  })
+  return _.assign({}, state, {
+    answerOptions: state.answerOptions.slice(0, optionIdx)
+      .concat([updatedAnswerOption])
+      .concat(state.answerOptions.slice(optionIdx + 1)),
+    answerQueue: state.answerQueue.concat([action.payload])
+  })
+}
+
+function strokeOrderIncorrect(state, action, optionIdx) {
+  let updatedAnswerOption = _.assign({}, state.answerOptions[optionIdx], {
+    answered: true,
+    correct: false,
+    active: true
+  })
+  return _.assign({}, state, {
+    answerOptions: state.answerOptions.slice(0, optionIdx)
+      .concat([updatedAnswerOption])
+      .concat(state.answerOptions.slice(optionIdx + 1)),
+    mistakeCount: state.mistakeCount + 1
+  })
+}
+
 const question = handleActions({
-  [ASK_QUESTION]: (state, action) => action.payload
+  [ASK_QUESTION]: (state, action) => _.assign({}, state, action.payload),
+  [GIVE_ANSWER]: (state, action) => {
+    switch (state.type) {
+      case QUESTION_TYPE_STROKE_ORDER:
+        let optionIdx = state.answerOptions.findIndex(a => a.answerId == action.payload)
+        if (
+          (_.isEmpty(state.answerQueue) && action.payload == 0) ||
+          ( ! _.isEmpty(state.answerQueue) && action.payload == _.last(state.answerQueue) + 1)
+        ) {
+          return strokeOrderCorrect(state, action, optionIdx)
+        } else {
+          return strokeOrderIncorrect(state, action, optionIdx)
+        }
+        break;
+      case QUESTION_TYPE_COMPONENTS:
+        break;
+      default: throw new Error('Unexpected question type: ' + state.type)
+    }
+  }
 }, {
   type: null,
   kanji: null,
   words: null,
-  answerOptions: null
+  answerOptions: null,
+  answerQueue: [],
+  mistakeCount: 0
 })
 
 export default combineReducers({

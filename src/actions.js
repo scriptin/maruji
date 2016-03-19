@@ -111,7 +111,13 @@ export function nextQuestion() {
       switch (question.type) {
         case QUESTION_TYPE_STROKE_ORDER:
           answerOptions = _.shuffle(
-            splitIntoStrokes(kanjiDataList[0].svg).map(svg => ({ svg }))
+            splitIntoStrokes(kanjiDataList[0].svg).map((svg, idx) => ({
+              svg: svgUtil.postprocess(svg, 80),
+              answerId: idx,
+              answered: false,
+              correct: false,
+              active: true
+            }))
           )
           break;
         case QUESTION_TYPE_COMPONENTS:
@@ -134,3 +140,6 @@ export function nextQuestion() {
 
 export const ASK_QUESTION = 'ASK_QUESTION'
 export const askQuestion = createAction(ASK_QUESTION)
+
+export const GIVE_ANSWER = 'GIVE_ANSWER'
+export const giveAnswer = createAction(GIVE_ANSWER)
