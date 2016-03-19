@@ -66,7 +66,8 @@ function strokeOrderCorrect(state, action, optionIdx) {
     answerOptions: state.answerOptions.slice(0, optionIdx)
       .concat([updatedAnswerOption])
       .concat(state.answerOptions.slice(optionIdx + 1)),
-    answerQueue: state.answerQueue.concat([action.payload])
+    answerQueue: state.answerQueue.concat([action.payload]),
+    progress: ((state.answerQueue.length + 1) / state.answerOptions.length * 100) | 0
   })
 }
 
@@ -85,7 +86,9 @@ function strokeOrderIncorrect(state, action, optionIdx) {
 }
 
 const question = handleActions({
-  [ASK_QUESTION]: (state, action) => _.assign({}, state, action.payload),
+  [ASK_QUESTION]: (state, action) => _.assign({}, state, action.payload, {
+    progress: 0
+  }),
   [GIVE_ANSWER]: (state, action) => {
     switch (state.type) {
       case QUESTION_TYPE_STROKE_ORDER:
@@ -110,7 +113,8 @@ const question = handleActions({
   words: null,
   answerOptions: null,
   answerQueue: [],
-  mistakeCount: 0
+  mistakeCount: 0,
+  progress: 0
 })
 
 export default combineReducers({

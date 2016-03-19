@@ -1,5 +1,26 @@
 .btn-svg {
-  margin-right: 20px !important;
-  margin-bottom: 20px !important;
   padding: 5px 5px 1px 5px !important;
+  .kanji-svg {
+    .strokes {
+      fill: none;
+      stroke: #000;
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      .muted {
+        stroke-width: 2;
+        stroke-opacity: 0.3;
+      }
+      .highlighted {
+        stroke-width: 5;
+      }
+    }
+    .frame {
+      fill: none;
+      stroke: #bbb;
+      stroke-width: 1;
+      stroke-linecap: square;
+      stroke-linejoin: square;
+    }
+  }
 }

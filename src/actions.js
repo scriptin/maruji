@@ -112,7 +112,7 @@ export function nextQuestion() {
         case QUESTION_TYPE_STROKE_ORDER:
           answerOptions = _.shuffle(
             splitIntoStrokes(kanjiDataList[0].svg).map((svg, idx) => ({
-              svg: svgUtil.postprocess(svg, 80),
+              svg: svgUtil.postprocess(svg, 90),
               answerId: idx,
               answered: false,
               correct: false,
