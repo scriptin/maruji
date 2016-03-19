@@ -27,3 +27,13 @@ export function buildQuestion(kanjiList, kanjiDefs, progress) {
     kanjiOptions
   }
 }
+
+export function splitIntoStrokes(svg) {
+  return svg.find('.strokes path').toArray().map((stroke, idx) => {
+    let clone = svg.clone()
+    let order = $(stroke).attr('data-order')
+    clone.find('.strokes path[data-order!=' + order + ']').addClass('muted')
+    clone.find('.strokes path[data-order =' + order + ']').addClass('highlighted')
+    return clone
+  })
+}

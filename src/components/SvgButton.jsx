@@ -3,15 +3,14 @@ import $ from 'jquery'
 
 require('../styles/btn-svg.less')
 
-const SvgButton = ({ svg, isCorrect }) => (
+const SvgButton = ({ svg }) => (
   <button className="btn btn-default btn-svg"
     dangerouslySetInnerHTML={{__html: svg.prop('outerHTML')}}
   />
 )
 
 SvgButton.propTypes = {
-  svg: PropTypes.object.isRequired,
-  isCorrect: PropTypes.bool.isRequired
+  svg: PropTypes.object.isRequired
 }
 
 export default SvgButton

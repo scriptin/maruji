@@ -58,6 +58,7 @@ const progressStorage = handleActions({
 const question = handleActions({
   [ASK_QUESTION]: (state, action) => action.payload
 }, {
+  type: null,
   kanji: null,
   words: null,
   answerOptions: null

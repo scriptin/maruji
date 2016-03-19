@@ -13,7 +13,7 @@ const AnswerArea = ({ isLoading, answerOptions }) => {
   return (
     <div>
       { answerOptions.map((opt, idx) =>
-        <SvgButton key={idx} isCorrect={opt.isCorrect} svg={svgUtil.postprocess(opt.svg, 80)} />
+        <SvgButton key={idx} svg={svgUtil.postprocess(opt.svg, 80)} />
       ) }
     </div>
   )

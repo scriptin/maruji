@@ -4,7 +4,10 @@ import Promise from 'bluebird'
 import { createAction } from 'redux-actions'
 import * as util from './util'
 import * as svgUtil from './svg'
-import { buildQuestion } from './question'
+import {
+  buildQuestion, splitIntoStrokes,
+  QUESTION_TYPE_STROKE_ORDER, QUESTION_TYPE_COMPONENTS
+} from './question'
 
 // Errors
 
@@ -103,13 +106,28 @@ export function nextQuestion() {
         .catch(Error, e => dispatch(reportError(e)))
         .catch(xhr => dispatch(reportError(util.xhrToErrorMsg(xhr))))
     })
-    .then(answerOptions => dispatch(
-      askQuestion(_.assign({}, {
-        kanji: question.kanji,
-        words: question.words,
-        answerOptions
-      }))
-    ))
+    .then(kanjiDataList => {
+      let answerOptions
+      switch (question.type) {
+        case QUESTION_TYPE_STROKE_ORDER:
+          answerOptions = _.shuffle(
+            splitIntoStrokes(kanjiDataList[0].svg).map(svg => ({ svg }))
+          )
+          break;
+        case QUESTION_TYPE_COMPONENTS:
+          answerOptions = kanjiDataList
+          break;
+        default: throw new Error('Unexpected question type: ' + question.type)
+      }
+      return dispatch(
+        askQuestion({
+          type: question.type,
+          kanji: question.kanji,
+          words: question.words,
+          answerOptions
+        })
+      )
+    })
     .catch(e => dispatch(reportError(e)))
   }
 }
