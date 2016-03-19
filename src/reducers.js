@@ -111,6 +111,8 @@ const question = handleActions({
   type: null,
   kanji: null,
   words: null,
+  kanjiSvg: null,
+  kanjiSvgMeta: null,
   answerOptions: null,
   answerQueue: [],
   mistakeCount: 0,

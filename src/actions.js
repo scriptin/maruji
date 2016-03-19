@@ -107,6 +107,8 @@ export function nextQuestion() {
         .catch(xhr => dispatch(reportError(util.xhrToErrorMsg(xhr))))
     })
     .then(kanjiDataList => {
+      let originalKanjiData = kanjiDataList.find(k => k.isCorrect)
+      let kanjiSvg = svgUtil.postprocess(originalKanjiData.svg.clone(), 100)
       let answerOptions
       switch (question.type) {
         case QUESTION_TYPE_STROKE_ORDER:
@@ -130,6 +132,8 @@ export function nextQuestion() {
           type: question.type,
           kanji: question.kanji,
           words: question.words,
+          kanjiSvg,
+          kanjiSvgMeta: originalKanjiData.meta,
           answerOptions
         })
       )

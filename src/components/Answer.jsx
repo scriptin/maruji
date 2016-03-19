@@ -18,7 +18,9 @@ const Answer = ({ questionType, answerOptions, progress, mistakeCount }) => (
       { questionTitle(questionType) }
     </div>
     <div className="panel-body">
-      <p>TODO</p>
+      <p>
+        TODO
+      </p>
       <div className="clearfix">
         <div className="progress pull-left">
           <div className="progress-bar" role="progressbar"
