@@ -12,6 +12,8 @@ import {
 } from './actions'
 import { QUESTION_TYPE_STROKE_ORDER, QUESTION_TYPE_COMPONENTS } from './question'
 
+// Errors store
+
 const errorStore = handleActions({
   [REPORT_ERROR]: (state, action) => {
     console.error(action.payload)
@@ -22,6 +24,8 @@ const errorStore = handleActions({
 }, {
   errors: []
 })
+
+// Kanji list store
 
 const kanjiListStore = handleActions({
   [LIST_LOAD_START]: (state, action) => _.assign({}, state, {
@@ -36,6 +40,8 @@ const kanjiListStore = handleActions({
   list: []
 })
 
+// Kanji definitions store
+
 const kanjiDefsStore = handleActions({
   [DEFS_LOAD_START]: (state, action) => _.assign({}, state, {
     isLoading: true
@@ -49,6 +55,8 @@ const kanjiDefsStore = handleActions({
   defs: {}
 })
 
+// Progress store
+
 const progressStore = handleActions({
   [SET_PROGRESS]: (state, action) => _.assign({}, state, {
     progress: action.payload
@@ -56,6 +64,8 @@ const progressStore = handleActions({
 }, {
   progress: {}
 })
+
+// Question store
 
 const strokeOrderAnswerIsCorect = (queue, answerId) =>
   (   _.isEmpty(queue) && answerId == 0) ||
@@ -113,10 +123,20 @@ function updateStateStrokeOrder(state, action) {
   })
 }
 
+const defaultQuestionStore = {
+  type: null,
+  kanji: null,
+  kanjiSvg: null,
+  kanjiSvgMeta: null,
+  words: [],
+  answerOptions: [],
+  answerQueue: [],
+  mistakeCount: 0,
+  progress: 0
+}
+
 const questionStore = handleActions({
-  [ASK_QUESTION]: (state, action) => _.assign({}, state, action.payload, {
-    progress: 0
-  }),
+  [ASK_QUESTION]: (state, action) => _.assign({}, defaultQuestionStore, action.payload),
   [GIVE_ANSWER]: (state, action) => {
     switch (state.type) {
       case QUESTION_TYPE_STROKE_ORDER: return updateStateStrokeOrder(state, action)
@@ -124,17 +144,7 @@ const questionStore = handleActions({
       default: throw new Error('Unexpected question type: ' + state.type)
     }
   }
-}, {
-  type: null,
-  kanji: null,
-  kanjiSvg: null,
-  kanjiSvgMeta: null,
-  words: null,
-  answerOptions: null,
-  answerQueue: [],
-  mistakeCount: 0,
-  progress: 0
-})
+}, defaultQuestionStore)
 
 export default combineReducers({
   errorStore,
