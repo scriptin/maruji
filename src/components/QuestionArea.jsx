@@ -10,5 +10,5 @@ QuestionArea.propTypes = {
 }
 
 export default connect(state => ({
-  isLoading: !state.questionStore.words
+  isLoading: state.questionStore.isLoading
 }))(QuestionArea)

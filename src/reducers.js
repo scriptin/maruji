@@ -124,6 +124,7 @@ function updateStateStrokeOrder(state, action) {
 }
 
 const defaultQuestionStore = {
+  isLoading: true,
   type: null,
   kanji: null,
   kanjiSvg: null,
@@ -136,7 +137,9 @@ const defaultQuestionStore = {
 }
 
 const questionStore = handleActions({
-  [ASK_QUESTION]: (state, action) => _.assign({}, defaultQuestionStore, action.payload),
+  [ASK_QUESTION]: (state, action) => _.assign({}, defaultQuestionStore, action.payload, {
+    isLoading: false
+  }),
   [GIVE_ANSWER]: (state, action) => {
     switch (state.type) {
       case QUESTION_TYPE_STROKE_ORDER: return updateStateStrokeOrder(state, action)

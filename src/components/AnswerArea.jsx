@@ -19,5 +19,5 @@ AnswerArea.propTypes = {
 }
 
 export default connect(state => ({
-  isLoading: !state.questionStore.answerOptions
+  isLoading: state.questionStore.isLoading
 }))(AnswerArea)
