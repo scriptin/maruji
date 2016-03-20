@@ -4,13 +4,13 @@ import TranslationList from './TranslationList'
 require('../styles/word.less')
 
 const renderWriting = (w, kanji) => (
-  <span className="word">
+  <span className="no-break">
     { w.replace(new RegExp(kanji, 'g'), '〇') }
   </span>
 )
 
 const renderReading = (r, idx, total) => (
-  <span key={idx} className={ 'word' + (idx == 0 ? '' : ' text-muted') }>
+  <span key={idx} className={ 'no-break' + (idx == 0 ? '' : ' text-muted') }>
     { '【' + r + '】' }
   </span>
 )
@@ -22,7 +22,7 @@ const renderReadings = readings => (
 )
 
 const Word = ({ word, kanji }) => (
-  <div className="panel panel-default">
+  <div className="word panel panel-default">
     <div className="panel-heading">
       <h3 className="panel-title">
         { renderWriting(word.w, kanji) }
