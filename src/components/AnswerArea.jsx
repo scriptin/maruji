@@ -2,14 +2,14 @@ import React, { PropTypes } from 'react'
 import { connect } from 'react-redux'
 import ProgressBar from './ProgressBar'
 import AnswerPanel from './AnswerPanel'
-import AnswerList from './AnswerList'
+import AnswerOptionList from './AnswerOptionList'
 
 const AnswerArea = ({ isLoading, answerOptions, onAnswerButtonClick }) => {
   if (isLoading) return <ProgressBar />
   return (
     <div>
       <AnswerPanel />
-      <AnswerList />
+      <AnswerOptionList />
     </div>
   )
 }

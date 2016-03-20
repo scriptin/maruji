@@ -4,10 +4,10 @@ import { connect } from 'react-redux'
 import KanjiButton from './KanjiButton'
 import { giveAnswer } from '../actions'
 
-require('../styles/answer-list.less')
+require('../styles/answer-options-list.less')
 
-const AnswerList = ({ answerOptions, onAnswerButtonClick }) => (
-  <ol className="answer-list list-unstyled">
+const AnswerOptionList = ({ answerOptions, onAnswerButtonClick }) => (
+  <ol className="answer-options-list list-unstyled">
     { answerOptions.map((opt, idx) =>
       <li key={idx}>
         <KanjiButton
@@ -23,7 +23,7 @@ const AnswerList = ({ answerOptions, onAnswerButtonClick }) => (
   </ol>
 )
 
-AnswerList.propTypes = {
+AnswerOptionList.propTypes = {
   answerOptions: PropTypes.arrayOf(PropTypes.object).isRequired,
   onAnswerButtonClick: PropTypes.func.isRequired
 }
@@ -35,4 +35,4 @@ export default connect(
   dispatch => ({
     onAnswerButtonClick: answerId => dispatch(giveAnswer(answerId))
   })
-)(AnswerList)
+)(AnswerOptionList)
