@@ -16,6 +16,12 @@ export const preprocess = svg => {
   svg.find('> g').removeAttr('style').addClass('strokes')
   // add ordinal numbers to strokes:
   svg.find('path').toArray().forEach((el, idx) => $(el).attr('data-order', idx + 1))
+  // move values of id attributes to data-id to prevent id collisions:
+  svg.find('[id]').toArray().forEach(e => {
+    let elem = $(e)
+    let id = elem.attr('id')
+    elem.removeAttr('id').attr('data-id', id.replace('kvg:', ''))
+  })
   return svg
 }
 
@@ -24,8 +30,21 @@ export const postprocess = (svg, size) => {
   svg.prepend(buildFrame(svg.attr('width'), svg.attr('height')))
   // set class and adjust attributes of a root element:
   svg.addClass('kanji-svg').attr({ width: size, height: size })
-  // remove all ids:
-  svg.find('[id]').removeAttr('id')
+  return svg
+}
+
+export const splitIntoStrokes = svg => {
+  return svg.find('.strokes path').toArray().map((stroke, idx) => {
+    let clone = svg.clone()
+    let order = $(stroke).attr('data-order')
+    clone.find('.strokes path[data-order!=' + order + ']').addClass('muted')
+    clone.find('.strokes path[data-order =' + order + ']').addClass('highlighted')
+    return clone
+  })
+}
+
+export const muteAllStrokes = svg => {
+  svg.find('.strokes path').addClass('muted')
   return svg
 }
 

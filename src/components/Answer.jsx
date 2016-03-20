@@ -1,5 +1,6 @@
 import React, { PropTypes } from 'react'
 import { connect } from 'react-redux'
+import SvgPanel from './SvgPanel'
 import { QUESTION_TYPE_STROKE_ORDER, QUESTION_TYPE_COMPONENTS } from '../question'
 
 require('../styles/answer-panel.less')
@@ -12,14 +13,17 @@ function questionTitle(questionType) {
   }
 }
 
-const Answer = ({ questionType, answerOptions, progress, mistakeCount }) => (
+const Answer = ({ questionType, kanji, kanjiSvg, answerOptions, progress, mistakeCount }) => (
   <div className="panel panel-default answer-panel">
     <div className="panel-heading">
       { questionTitle(questionType) }
     </div>
     <div className="panel-body">
       <p>
-        TODO
+        <SvgPanel svg={kanjiSvg} />
+        <span className="big-kanji">
+          { kanji }
+        </span>
       </p>
       <div className="clearfix">
         <div className="progress pull-left">
@@ -42,12 +46,16 @@ const Answer = ({ questionType, answerOptions, progress, mistakeCount }) => (
 
 Answer.propTypes = {
   questionType: PropTypes.string.isRequired,
+  kanji: PropTypes.string.isRequired,
+  kanjiSvg: PropTypes.object.isRequired,
   progress: PropTypes.number.isRequired,
   mistakeCount: PropTypes.number.isRequired
 }
 
 export default connect(state => ({
   questionType: state.question.type,
+  kanji: state.question.kanji,
+  kanjiSvg: state.question.kanjiSvg,
   progress: state.question.progress,
   mistakeCount: state.question.mistakeCount
 }))(Answer)

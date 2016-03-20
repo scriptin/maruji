@@ -5,7 +5,7 @@ import { createAction } from 'redux-actions'
 import * as util from './util'
 import * as svgUtil from './svg'
 import {
-  buildQuestion, splitIntoStrokes,
+  buildQuestion,
   QUESTION_TYPE_STROKE_ORDER, QUESTION_TYPE_COMPONENTS
 } from './question'
 
@@ -108,12 +108,14 @@ export function nextQuestion() {
     })
     .then(kanjiDataList => {
       let originalKanjiData = kanjiDataList.find(k => k.isCorrect)
-      let kanjiSvg = svgUtil.postprocess(originalKanjiData.svg.clone(), 100)
+      let kanjiSvg = svgUtil.muteAllStrokes(
+        svgUtil.postprocess(originalKanjiData.svg.clone(), 100)
+      )
       let answerOptions
       switch (question.type) {
         case QUESTION_TYPE_STROKE_ORDER:
           answerOptions = _.shuffle(
-            splitIntoStrokes(kanjiDataList[0].svg).map((svg, idx) => ({
+            svgUtil.splitIntoStrokes(kanjiDataList[0].svg).map((svg, idx) => ({
               svg: svgUtil.postprocess(svg, 90),
               answerId: idx,
               answered: false,
