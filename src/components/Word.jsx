@@ -36,8 +36,8 @@ const Word = ({ word, kanji }) => (
 )
 
 Word.propTypes = {
-  word: PropTypes.object.isRequired,
-  kanji: PropTypes.shape({
+  kanji: PropTypes.string.isRequired,
+  word: PropTypes.shape({
     w: PropTypes.string.isRequired,
     r: PropTypes.arrayOf(PropTypes.string).isRequired,
     t: PropTypes.arrayOf(PropTypes.shape({

@@ -4,9 +4,7 @@ import { connect } from 'react-redux'
 
 const WordList = ({ words, kanji }) => (
   <div>
-    { words.map((word, idx) =>
-      <Word key={idx} num={idx + 1} word={word} kanji={kanji} />
-    ) }
+    { words.map((word, idx) => <Word key={idx} word={word} kanji={kanji} />) }
   </div>
 )
 
