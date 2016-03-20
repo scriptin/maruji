@@ -17,7 +17,7 @@ export const reportError = createAction(REPORT_ERROR, e => e instanceof Error ? 
 // Initialization
 
 export function initApp(listUrl, defsUrl) {
-  return (dispatch, getState) => {
+  return dispatch => {
     dispatch(listLoadStart())
     dispatch(defsLoadStart())
     dispatch(initProgress())
@@ -105,10 +105,12 @@ function buildAnswerOptions(kanjiDataList, questionType) {
 
 export function nextQuestion() {
   return (dispatch, getState) => {
-    let kanjiList = getState().kanjiList.list
-    let kanjiDefs = getState().kanjiDefs.defs
-    let progress = getState().progressStorage.progress
+    let kanjiList = getState().kanjiListStore.list
+    let kanjiDefs = getState().kanjiDefsStore.defs
+    let progress = getState().progressStore.progress
+
     let question = buildQuestion(kanjiList, kanjiDefs, progress)
+
     return Promise.map(question.kanjiOptions, kanji => {
       return util.getPlainText('kanjivg/' + util.kanjiCode(kanji) + '.svg')
         .then(svgPlainText => {
@@ -131,9 +133,9 @@ export function nextQuestion() {
         askQuestion({
           type: question.type,
           kanji: question.kanji,
-          words: question.words,
           kanjiSvg,
           kanjiSvgMeta: originalKanjiData.meta,
+          words: question.words,
           answerOptions: buildAnswerOptions(kanjiDataList, question.type)
         })
       )

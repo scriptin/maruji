@@ -52,10 +52,13 @@ Answer.propTypes = {
   mistakeCount: PropTypes.number.isRequired
 }
 
-export default connect(state => ({
-  questionType: state.question.type,
-  kanji: state.question.kanji,
-  kanjiSvg: state.question.kanjiSvg,
-  progress: state.question.progress,
-  mistakeCount: state.question.mistakeCount
-}))(Answer)
+export default connect(state => {
+  let questionStore = state.questionStore
+  return {
+    questionType: questionStore.type,
+    kanji: questionStore.kanji,
+    kanjiSvg: questionStore.kanjiSvg,
+    progress: questionStore.progress,
+    mistakeCount: questionStore.mistakeCount
+  }
+})(Answer)

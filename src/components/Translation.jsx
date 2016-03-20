@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { PropTypes } from 'react'
 
 const renderPos = pos => (
   <small className="text-info">
@@ -24,5 +24,13 @@ const Translation = ({ translation }) => (
     { renderForKana(translation.forKana) }
   </li>
 )
+
+Translation.propTypes = {
+  translation: PropTypes.shape({
+    pos: PropTypes.arrayOf(PropTypes.string).isRequired,
+    gloss: PropTypes.arrayOf(PropTypes.string).isRequired,
+    forKana: PropTypes.arrayOf(PropTypes.string).isRequired
+  }).isRequired
+}
 
 export default Translation

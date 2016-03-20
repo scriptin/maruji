@@ -30,7 +30,7 @@ AnswerList.propTypes = {
 
 export default connect(
   state => ({
-    answerOptions: state.question.answerOptions
+    answerOptions: state.questionStore.answerOptions
   }),
   dispatch => ({
     onAnswerButtonClick: answerId => dispatch(giveAnswer(answerId))

@@ -12,18 +12,18 @@ import {
 } from './actions'
 import { QUESTION_TYPE_STROKE_ORDER, QUESTION_TYPE_COMPONENTS } from './question'
 
-const errors = handleActions({
+const errorStore = handleActions({
   [REPORT_ERROR]: (state, action) => {
     console.error(action.payload)
     return _.assign({}, state, {
-      errorList: state.errorList.concat([action.payload.message])
+      errors: _.concat(state.errors, action.payload.message)
     })
   }
 }, {
-  errorList: []
+  errors: []
 })
 
-const kanjiList = handleActions({
+const kanjiListStore = handleActions({
   [LIST_LOAD_START]: (state, action) => _.assign({}, state, {
     isLoading: true
   }),
@@ -36,7 +36,7 @@ const kanjiList = handleActions({
   list: []
 })
 
-const kanjiDefs = handleActions({
+const kanjiDefsStore = handleActions({
   [DEFS_LOAD_START]: (state, action) => _.assign({}, state, {
     isLoading: true
   }),
@@ -49,7 +49,7 @@ const kanjiDefs = handleActions({
   defs: {}
 })
 
-const progressStorage = handleActions({
+const progressStore = handleActions({
   [SET_PROGRESS]: (state, action) => _.assign({}, state, {
     progress: action.payload
   })
@@ -96,7 +96,7 @@ function updateStateStrokeOrder(state, action, correct) {
   })
 }
 
-const question = handleActions({
+const questionStore = handleActions({
   [ASK_QUESTION]: (state, action) => _.assign({}, state, action.payload, {
     progress: 0
   }),
@@ -123,9 +123,9 @@ const question = handleActions({
 })
 
 export default combineReducers({
-  errors,
-  kanjiList,
-  kanjiDefs,
-  progressStorage,
-  question
+  errorStore,
+  kanjiListStore,
+  kanjiDefsStore,
+  progressStore,
+  questionStore
 })

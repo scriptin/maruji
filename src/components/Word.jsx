@@ -1,11 +1,11 @@
-import React from 'react'
+import React, { PropTypes } from 'react'
 import TranslationList from './TranslationList'
 
 require('../styles/word.less')
 
-const renderWriting = (w, hiddenChar) => (
+const renderWriting = (w, kanji) => (
   <span className="word">
-    { w.replace(new RegExp(hiddenChar, 'g'), '〇') }
+    { w.replace(new RegExp(kanji, 'g'), '〇') }
   </span>
 )
 
@@ -21,11 +21,11 @@ const renderReadings = readings => (
   </span>
 )
 
-const Word = ({ word, hiddenChar }) => (
+const Word = ({ word, kanji }) => (
   <div className="panel panel-default">
     <div className="panel-heading">
       <h3 className="panel-title">
-        { renderWriting(word.w, hiddenChar) }
+        { renderWriting(word.w, kanji) }
         { renderReadings(word.r) }
       </h3>
     </div>
@@ -34,5 +34,18 @@ const Word = ({ word, hiddenChar }) => (
     </div>
   </div>
 )
+
+Word.propTypes = {
+  word: PropTypes.object.isRequired,
+  kanji: PropTypes.shape({
+    w: PropTypes.string.isRequired,
+    r: PropTypes.arrayOf(PropTypes.string).isRequired,
+    t: PropTypes.arrayOf(PropTypes.shape({
+      pos: PropTypes.arrayOf(PropTypes.string).isRequired,
+      forKana: PropTypes.arrayOf(PropTypes.string).isRequired,
+      gloss: PropTypes.arrayOf(PropTypes.string).isRequired
+    })).isRequired
+  }).isRequired
+}
 
 export default Word
