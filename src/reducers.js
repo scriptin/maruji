@@ -67,10 +67,18 @@ const updateAnswerOption = (option, correct) => _.assign({}, option, {
   active: ! correct
 })
 
+const updateSvg = (svg, answerId) => {
+  $(svg.find('.strokes path').toArray()[answerId]).removeClass('muted')
+  return svg
+}
+
 function updateStateStrokeOrder(state, action) {
   let correct = strokeOrderAnswerIsCorect(state.answerQueue, action.payload)
   let optionIdx = state.answerOptions.findIndex(a => a.answerId == action.payload)
 
+  let kanjiSvg = correct
+    ? updateSvg(state.kanjiSvg.clone(), action.payload)
+    : state.kanjiSvg
   let answerOptions = util.replaceElement(
     state.answerOptions,
     optionIdx,
@@ -87,6 +95,7 @@ function updateStateStrokeOrder(state, action) {
     : (state.mistakeCount + 1)
 
   return _.assign({}, state, {
+    kanjiSvg,
     answerOptions,
     answerQueue,
     progress,
