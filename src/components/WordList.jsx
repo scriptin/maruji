@@ -1,15 +1,17 @@
 import React, { PropTypes } from 'react'
 import Word from './Word'
 import { connect } from 'react-redux'
+import { QUESTION_TYPE_STROKE_ORDER } from '../question'
 
-const WordList = ({ words, kanji }) => (
+const WordList = ({ kanji, hide, words }) => (
   <div>
-    { words.map((word, idx) => <Word key={idx} word={word} kanji={kanji} />) }
+    { words.map((word, idx) => <Word key={idx} word={word} kanji={kanji} hide={hide} />) }
   </div>
 )
 
 WordList.propTypes = {
   kanji: PropTypes.string.isRequired,
+  hide: PropTypes.bool.isRequired,
   words: PropTypes.arrayOf(PropTypes.object).isRequired
 }
 
@@ -17,6 +19,7 @@ export default connect(state => {
   let questionStore = state.questionStore
   return {
     kanji: questionStore.kanji,
+    hide: questionStore.type != QUESTION_TYPE_STROKE_ORDER,
     words: questionStore.words
   }
 })(WordList)

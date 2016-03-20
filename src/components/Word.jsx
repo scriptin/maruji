@@ -3,15 +3,29 @@ import TranslationList from './TranslationList'
 
 require('../styles/word.less')
 
-const renderWriting = (w, kanji) => (
+const CIRCLE = '〇'
+const READING_BRACKET_OPEN = '【'
+const READING_BRACKET_CLOSE = '】'
+
+const wrapInSpan = (part, kanji, idx) => (
+  <span key={idx} className={_.includes([kanji, CIRCLE], part) ? 'text-primary' : ''}>
+    { part }
+  </span>
+)
+
+const renderWriting = (w, kanji, hide) => (
   <span className="no-break">
-    { w.replace(new RegExp(kanji, 'g'), '〇') }
+    {
+      (hide ? w.replace(new RegExp(kanji, 'g'), CIRCLE) : w)
+        .split('')
+        .map((part, idx) => wrapInSpan(part, kanji, idx))
+    }
   </span>
 )
 
 const renderReading = (r, idx, total) => (
   <span key={idx} className={ 'no-break' + (idx == 0 ? '' : ' text-muted') }>
-    { '【' + r + '】' }
+    { READING_BRACKET_OPEN + r + READING_BRACKET_CLOSE }
   </span>
 )
 
@@ -21,11 +35,11 @@ const renderReadings = readings => (
   </span>
 )
 
-const Word = ({ word, kanji }) => (
+const Word = ({ kanji, hide, word }) => (
   <div className="word panel panel-default">
     <div className="panel-heading">
       <h3 className="panel-title">
-        { renderWriting(word.w, kanji) }
+        { renderWriting(word.w, kanji, hide) }
         { renderReadings(word.r) }
       </h3>
     </div>
@@ -37,6 +51,7 @@ const Word = ({ word, kanji }) => (
 
 Word.propTypes = {
   kanji: PropTypes.string.isRequired,
+  hide: PropTypes.bool.isRequired,
   word: PropTypes.shape({
     w: PropTypes.string.isRequired,
     r: PropTypes.arrayOf(PropTypes.string).isRequired,
