@@ -57,12 +57,9 @@ const progressStore = handleActions({
   progress: {}
 })
 
-function strokeOrderAnswerIsCorect(state, action) {
-  let queue = state.answerQueue
-  let answerId = action.payload
-  return (   _.isEmpty(queue) && answerId == 0) ||
-         ( ! _.isEmpty(queue) && answerId == _.last(queue) + 1)
-}
+const strokeOrderAnswerIsCorect = (queue, answerId) =>
+  (   _.isEmpty(queue) && answerId == 0) ||
+  ( ! _.isEmpty(queue) && answerId == _.last(queue) + 1)
 
 const updateAnswerOption = (option, correct) => _.assign({}, option, {
   answered: true,
@@ -70,7 +67,8 @@ const updateAnswerOption = (option, correct) => _.assign({}, option, {
   active: ! correct
 })
 
-function updateStateStrokeOrder(state, action, correct) {
+function updateStateStrokeOrder(state, action) {
+  let correct = strokeOrderAnswerIsCorect(state.answerQueue, action.payload)
   let optionIdx = state.answerOptions.findIndex(a => a.answerId == action.payload)
 
   let answerOptions = util.replaceElement(
@@ -102,10 +100,7 @@ const questionStore = handleActions({
   }),
   [GIVE_ANSWER]: (state, action) => {
     switch (state.type) {
-      case QUESTION_TYPE_STROKE_ORDER: return updateStateStrokeOrder(
-        state, action,
-        strokeOrderAnswerIsCorect(state, action)
-      )
+      case QUESTION_TYPE_STROKE_ORDER: return updateStateStrokeOrder(state, action)
       case QUESTION_TYPE_COMPONENTS: return state;
       default: throw new Error('Unexpected question type: ' + state.type)
     }
