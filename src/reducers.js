@@ -64,8 +64,18 @@ const strokeOrderAnswerIsCorect = (queue, answerId) =>
 const updateAnswerOption = (option, correct) => _.assign({}, option, {
   answered: true,
   correct,
-  active: ! correct
+  active: false // last given answer turns inactive even if it wasn't correct
+                // to prevent accidental double-clicks
 })
+
+const resetAnswerOption = option => {
+  let answeredAndCorrect = option.answered && option.correct
+  return _.assign({}, option, {
+    answered: answeredAndCorrect,
+    correct: answeredAndCorrect,
+    active: ! answeredAndCorrect // only correct answers stay inactive
+  })
+}
 
 const updateSvg = (svg, answerId) => {
   $(svg.find('.strokes path').toArray()[answerId]).removeClass('muted')
@@ -80,7 +90,7 @@ function updateStateStrokeOrder(state, action) {
     ? updateSvg(state.kanjiSvg.clone(), action.payload)
     : state.kanjiSvg
   let answerOptions = util.replaceElement(
-    state.answerOptions,
+    state.answerOptions.map(resetAnswerOption),
     optionIdx,
     updateAnswerOption(state.answerOptions[optionIdx], correct)
   )
