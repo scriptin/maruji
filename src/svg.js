@@ -37,8 +37,21 @@ export const splitIntoStrokes = svg => {
   return svg.find('.strokes path').toArray().map((stroke, idx) => {
     let clone = svg.clone()
     let order = $(stroke).attr('data-order')
+    let highlightedStroke = clone.find('.strokes path[data-order=' + order + ']')
+    let path = highlightedStroke.attr('d')
+    let start = path.split(/[a-z]+/i)
+      .filter(part => ! _.isEmpty(part))[0]
+      .split(',')
+      .map(v => new Number(_.trim(v)).valueOf())
+
+    clone.append(
+      $('<circle/>')
+        .addClass('stroke-start')
+        .attr({ cx: start[0], cy: start[1], r: 6 })
+    )
+    highlightedStroke.addClass('highlighted')
     clone.find('.strokes path[data-order!=' + order + ']').addClass('muted')
-    clone.find('.strokes path[data-order =' + order + ']').addClass('highlighted')
+
     return clone
   })
 }
