@@ -1,6 +1,6 @@
 import React, { PropTypes } from 'react'
 
-const Header = ({ isLoading, status }) => (
+const Header = () => (
   <nav className="navbar navbar-inverse navbar-static-top">
     <div className="container">
       <div className="navbar-header">
