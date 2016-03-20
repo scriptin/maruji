@@ -12,3 +12,6 @@ export const getPlainText = url => Promise.resolve($.get({
   url,
   dataType: 'text'
 }))
+
+export const replaceElement = (arr, idx, elem) =>
+  _.concat(arr.slice(0, idx), elem).concat(arr.slice(idx + 1))

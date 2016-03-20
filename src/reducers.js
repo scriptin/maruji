@@ -2,6 +2,7 @@ import _ from 'lodash'
 import $ from 'jquery'
 import { combineReducers } from 'redux'
 import { handleActions } from 'redux-actions'
+import * as util from './util'
 import {
   REPORT_ERROR,
   LIST_LOAD_START, LIST_LOAD_END,
@@ -56,32 +57,42 @@ const progressStorage = handleActions({
   progress: {}
 })
 
-function strokeOrderCorrect(state, action, optionIdx) {
-  let updatedAnswerOption = _.assign({}, state.answerOptions[optionIdx], {
-    answered: true,
-    correct: true,
-    active: false
-  })
-  return _.assign({}, state, {
-    answerOptions: state.answerOptions.slice(0, optionIdx)
-      .concat([updatedAnswerOption])
-      .concat(state.answerOptions.slice(optionIdx + 1)),
-    answerQueue: state.answerQueue.concat([action.payload]),
-    progress: ((state.answerQueue.length + 1) / state.answerOptions.length * 100) | 0
-  })
+function strokeOrderAnswerIsCorect(state, action) {
+  let queue = state.answerQueue
+  let answerId = action.payload
+  return (   _.isEmpty(queue) && answerId == 0) ||
+         ( ! _.isEmpty(queue) && answerId == _.last(queue) + 1)
 }
 
-function strokeOrderIncorrect(state, action, optionIdx) {
-  let updatedAnswerOption = _.assign({}, state.answerOptions[optionIdx], {
-    answered: true,
-    correct: false,
-    active: true
-  })
+const updateAnswerOption = (option, correct) => _.assign({}, option, {
+  answered: true,
+  correct,
+  active: ! correct
+})
+
+function updateStateStrokeOrder(state, action, correct) {
+  let optionIdx = state.answerOptions.findIndex(a => a.answerId == action.payload)
+
+  let answerOptions = util.replaceElement(
+    state.answerOptions,
+    optionIdx,
+    updateAnswerOption(state.answerOptions[optionIdx], correct)
+  )
+  let answerQueue = correct
+    ? _.concat(state.answerQueue, action.payload)
+    : state.answerQueue
+  let progress = correct
+    ? Math.round((state.answerQueue.length + 1) / state.answerOptions.length * 100)
+    : state.progress
+  let mistakeCount = correct
+    ? state.mistakeCount
+    : (state.mistakeCount + 1)
+
   return _.assign({}, state, {
-    answerOptions: state.answerOptions.slice(0, optionIdx)
-      .concat([updatedAnswerOption])
-      .concat(state.answerOptions.slice(optionIdx + 1)),
-    mistakeCount: state.mistakeCount + 1
+    answerOptions,
+    answerQueue,
+    progress,
+    mistakeCount
   })
 }
 
@@ -91,28 +102,20 @@ const question = handleActions({
   }),
   [GIVE_ANSWER]: (state, action) => {
     switch (state.type) {
-      case QUESTION_TYPE_STROKE_ORDER:
-        let optionIdx = state.answerOptions.findIndex(a => a.answerId == action.payload)
-        if (
-          (_.isEmpty(state.answerQueue) && action.payload == 0) ||
-          ( ! _.isEmpty(state.answerQueue) && action.payload == _.last(state.answerQueue) + 1)
-        ) {
-          return strokeOrderCorrect(state, action, optionIdx)
-        } else {
-          return strokeOrderIncorrect(state, action, optionIdx)
-        }
-        break;
-      case QUESTION_TYPE_COMPONENTS:
-        break;
+      case QUESTION_TYPE_STROKE_ORDER: return updateStateStrokeOrder(
+        state, action,
+        strokeOrderAnswerIsCorect(state, action)
+      )
+      case QUESTION_TYPE_COMPONENTS: return state;
       default: throw new Error('Unexpected question type: ' + state.type)
     }
   }
 }, {
   type: null,
   kanji: null,
-  words: null,
   kanjiSvg: null,
   kanjiSvgMeta: null,
+  words: null,
   answerOptions: null,
   answerQueue: [],
   mistakeCount: 0,

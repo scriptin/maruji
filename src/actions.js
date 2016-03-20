@@ -87,6 +87,22 @@ export const setProgress = createAction(SET_PROGRESS)
 
 // Questions
 
+function buildAnswerOptions(kanjiDataList, questionType) {
+  switch (questionType) {
+    case QUESTION_TYPE_STROKE_ORDER: return _.shuffle(
+      svgUtil.splitIntoStrokes(kanjiDataList[0].svg).map((svg, idx) => ({
+        svg: svgUtil.postprocess(svg, 90),
+        answerId: idx,
+        answered: false,
+        correct: false,
+        active: true
+      }))
+    )
+    case QUESTION_TYPE_COMPONENTS: return kanjiDataList
+    default: throw new Error('Unexpected question type: ' + questionType)
+  }
+}
+
 export function nextQuestion() {
   return (dispatch, getState) => {
     let kanjiList = getState().kanjiList.list
@@ -111,24 +127,6 @@ export function nextQuestion() {
       let kanjiSvg = svgUtil.muteAllStrokes(
         svgUtil.postprocess(originalKanjiData.svg.clone(), 100)
       )
-      let answerOptions
-      switch (question.type) {
-        case QUESTION_TYPE_STROKE_ORDER:
-          answerOptions = _.shuffle(
-            svgUtil.splitIntoStrokes(kanjiDataList[0].svg).map((svg, idx) => ({
-              svg: svgUtil.postprocess(svg, 90),
-              answerId: idx,
-              answered: false,
-              correct: false,
-              active: true
-            }))
-          )
-          break;
-        case QUESTION_TYPE_COMPONENTS:
-          answerOptions = kanjiDataList
-          break;
-        default: throw new Error('Unexpected question type: ' + question.type)
-      }
       return dispatch(
         askQuestion({
           type: question.type,
@@ -136,7 +134,7 @@ export function nextQuestion() {
           words: question.words,
           kanjiSvg,
           kanjiSvgMeta: originalKanjiData.meta,
-          answerOptions
+          answerOptions: buildAnswerOptions(kanjiDataList, question.type)
         })
       )
     })
