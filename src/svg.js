@@ -99,7 +99,7 @@ const getMeta = (elems, root) => elems.map(el => {
       ) != null
       return {
         type: TYPE_GROUP,
-        id: elem.attr('id'),
+        id: elem.attr('data-id'),
         decomposable: isElement && !containsStrokes && !containsPartialGroups,
         strokeCount: _.sum(children.map(c => c.strokeCount)),
         attrs,
@@ -107,7 +107,7 @@ const getMeta = (elems, root) => elems.map(el => {
       }
     case 'path': return {
       type: TYPE_STROKE,
-      id: elem.attr('id'),
+      id: elem.attr('data-id'),
       strokeCount: 1
     }
     default: throw new Error(
@@ -117,3 +117,7 @@ const getMeta = (elems, root) => elems.map(el => {
 })
 
 export const getMetadata = svg => getMeta(svg.find('.strokes > g').toArray(), svg)[0]
+
+export const splitIntoComponents = (svg, meta) => {
+  return svg.clone() // TODO
+}

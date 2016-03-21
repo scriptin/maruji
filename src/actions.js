@@ -4,10 +4,7 @@ import Promise from 'bluebird'
 import { createAction } from 'redux-actions'
 import * as util from './util'
 import * as svgUtil from './svg'
-import {
-  buildQuestion,
-  QUESTION_TYPE_STROKE_ORDER, QUESTION_TYPE_COMPONENTS
-} from './question'
+import { buildQuestion } from './question'
 
 // Errors
 
@@ -87,60 +84,15 @@ export const setProgress = createAction(SET_PROGRESS)
 
 // Questions
 
-function buildAnswerOptions(kanjiDataList, questionType) {
-  switch (questionType) {
-    case QUESTION_TYPE_STROKE_ORDER: return _.shuffle(
-      svgUtil.splitIntoStrokes(kanjiDataList[0].svg).map((svg, idx) => ({
-        svg: svgUtil.postprocess(svg, 90),
-        answerId: idx,
-        answered: false,
-        correct: false,
-        active: true
-      }))
-    )
-    case QUESTION_TYPE_COMPONENTS: return kanjiDataList
-    default: throw new Error('Unexpected question type: ' + questionType)
-  }
-}
-
 export function nextQuestion() {
   return (dispatch, getState) => {
     let kanjiList = getState().kanjiListStore.list
     let kanjiDefs = getState().kanjiDefsStore.defs
     let progress = getState().progressStore.progress
-
-    let question = buildQuestion(kanjiList, kanjiDefs, progress)
-
-    return Promise.map(question.kanjiOptions, kanji => {
-      return util.getPlainText('kanjivg/' + util.kanjiCode(kanji) + '.svg')
-        .then(svgPlainText => {
-          let svg = svgUtil.preprocess($(svgPlainText).last())
-          return {
-            svg,
-            meta: svgUtil.getMetadata(svg),
-            isCorrect: kanji == question.kanji
-          }
-        })
-        .catch(Error, e => dispatch(reportError(e)))
-        .catch(xhr => dispatch(reportError(util.xhrToErrorMsg(xhr))))
-    })
-    .then(kanjiDataList => {
-      let originalKanjiData = kanjiDataList.find(k => k.isCorrect)
-      let kanjiSvg = svgUtil.muteAllStrokes(
-        svgUtil.postprocess(originalKanjiData.svg.clone(), 100)
-      )
-      return dispatch(
-        askQuestion({
-          type: question.type,
-          kanji: question.kanji,
-          kanjiSvg,
-          kanjiSvgMeta: originalKanjiData.meta,
-          words: question.words,
-          answerOptions: buildAnswerOptions(kanjiDataList, question.type)
-        })
-      )
-    })
-    .catch(e => dispatch(reportError(e)))
+    return buildQuestion(kanjiList, kanjiDefs, progress)
+      .then(question => dispatch(askQuestion(question)))
+      .catch(Error, e => dispatch(reportError(e)))
+      .catch(xhr => dispatch(reportError(util.xhrToErrorMsg(xhr))))
   }
 }
 

@@ -128,7 +128,6 @@ const defaultQuestionStore = {
   type: null,
   kanji: null,
   kanjiSvg: null,
-  kanjiSvgMeta: null,
   words: [],
   answerOptions: [],
   answerQueue: [],
