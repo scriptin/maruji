@@ -95,7 +95,7 @@ const getMeta = (elems, root) => elems.map(el => {
       let isElement = _.has(attrs, 'element')
       let containsStrokes = children.find(c => c.type == TYPE_STROKE) != null
       let containsPartialGroups = children.find(c =>
-        c.type == TYPE_GROUP && (c.attrs.partial || c.attrs.part || c.attrs.number)
+        c.type == TYPE_GROUP && (c.attrs.part || c.attrs.number)
       ) != null
       return {
         type: TYPE_GROUP,
@@ -119,5 +119,15 @@ const getMeta = (elems, root) => elems.map(el => {
 export const getMetadata = svg => getMeta(svg.find('.strokes > g').toArray(), svg)[0]
 
 export const splitIntoComponents = (svg, meta) => {
-  return svg.clone() // TODO
+  if (meta.decomposable) {
+    return _.flattenDeep(
+      meta.children.map(childMeta => {
+        let clone = svg.clone()
+        clone.find('[data-id="' + childMeta.id + '"]').siblings().remove()
+        return splitIntoComponents(clone, childMeta)
+      })
+    )
+  } else {
+    return [svg.clone()]
+  }
 }

@@ -9,7 +9,7 @@ export const QUESTION_TYPE_COMPONENTS = 'QUESTION_TYPE_COMPONENTS'
 const KANJI_ANSWER_SIZE = 100
 const KANJI_OPTION_SIZE = 90
 
-const KANJI_TO_FETCH = 4
+const KANJI_TO_FETCH = 6
 const KANJIG_PATH = 'kanjivg'
 
 const kanjiToUrl = kanji => KANJIG_PATH + '/' + util.kanjiCode(kanji) + '.svg'
@@ -24,11 +24,14 @@ const selectRandomIncluding = (list, n, ...including) => {
 }
 
 const buildQuestionBase = (kanjiList, kanjiDefs, progress) => {
-  let kanji = kanjiList[(Math.random() * kanjiList.length) | 0] // TODO: choose kanji according to progress
-  let isNew = true // TODO: is kanji presented for the first time or has some pregress records?
+  // TODO: build question based on progress data.
+  let type = (Math.random() > 0.8) ? QUESTION_TYPE_STROKE_ORDER : QUESTION_TYPE_COMPONENTS
+  let kanji = kanjiList[(Math.random() * kanjiList.length) | 0]
+  let isNew = true
   let words = kanjiDefs.kanji[kanji].map(wordId => kanjiDefs.words[wordId])
-  let kanjiOptions = isNew ? [kanji] : selectRandomIncluding(kanjiList, KANJI_TO_FETCH, kanji)
-  let type = isNew ? QUESTION_TYPE_STROKE_ORDER : QUESTION_TYPE_COMPONENTS
+  let kanjiOptions = (type == QUESTION_TYPE_STROKE_ORDER)
+    ? [kanji]
+    : selectRandomIncluding(kanjiList, KANJI_TO_FETCH, kanji)
   return { type, kanji, kanjiOptions, words }
 }
 
@@ -41,27 +44,33 @@ const prepareSvg = (svg, questionType) => {
   }
 }
 
-const buildOptions = (kanjiDataList, split, size) => _(kanjiDataList)
+const buildOptions = (kanji, kanjiDataList, split, size) => _(kanjiDataList)
   .map(k => split(k.svg, k.svgMeta))
   .flatten()
   .map((svg, idx) => ({
     svg: svgUtil.postprocess(svg, size),
     answerId: idx,
     answered: false,
-    correct: false,
+    correct: kanji == svg.find('.strokes > g').first().attr('kvg:element'),
     active: true
   }))
   .shuffle()
   .value()
 
-const buildAnswerOptions = (kanjiDataList, questionType, svgSize) => {
+const buildAnswerOptions = (kanji, kanjiDataList, questionType, svgSize) => {
   switch (questionType) {
     case QUESTION_TYPE_STROKE_ORDER: return buildOptions(
+      kanji,
       kanjiDataList,
       svgUtil.splitIntoStrokes,
       svgSize
     )
-    case QUESTION_TYPE_COMPONENTS: return kanjiDataList // TODO
+    case QUESTION_TYPE_COMPONENTS: return buildOptions(
+      kanji,
+      kanjiDataList,
+      svgUtil.splitIntoComponents,
+      svgSize
+    )
     default: throw new Error('Unexpected question type: ' + questionType)
   }
 }
@@ -73,17 +82,18 @@ export const buildQuestion = (kanjiList, kanjiDefs, progress) => {
       .then(svgPlainText => {
         let svg = svgUtil.preprocess($(svgPlainText).last())
         let svgMeta = svgUtil.getMetadata(svg)
-        let isCorrect = kanji == question.kanji
-        return { kanji, svg, svgMeta, isCorrect }
+        let correct = kanji == question.kanji
+        return { kanji, svg, svgMeta, correct }
       })
   })
   .then(kanjiDataList => {
-    let originalKanjiDataItem = kanjiDataList.find(k => k.isCorrect)
+    let originalKanjiDataItem = kanjiDataList.find(k => k.correct)
     let kanjiSvg = prepareSvg(
       originalKanjiDataItem.svg.clone(),
       question.type
     )
     let answerOptions = buildAnswerOptions(
+      question.kanji,
       kanjiDataList,
       question.type,
       KANJI_OPTION_SIZE

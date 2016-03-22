@@ -6,6 +6,8 @@ import { nextQuestion } from '../actions'
 
 require('../styles/answer-panel.less')
 
+const UNKNOWN_KANJI_PLACEHOLDER = '？'
+
 function questionTitle(questionType) {
   switch (questionType) {
     case QUESTION_TYPE_STROKE_ORDER: return 'Select kanji strokes in a correct order:';
@@ -15,7 +17,7 @@ function questionTitle(questionType) {
 }
 
 const AnswerPanel = ({
-  questionType, kanji, kanjiSvg, answerOptions, progress, mistakeCount,
+  questionType, kanji, kanjiSvg, answerOptions, progress, done, mistakeCount,
   onContinueClick
 }) => (
   <div className="panel panel-default answer-panel">
@@ -33,27 +35,31 @@ const AnswerPanel = ({
             </td>
             <td>
               <span className="big-kanji">
-                { kanji }
+                {
+                  (done || questionType == QUESTION_TYPE_STROKE_ORDER)
+                    ? kanji
+                    : UNKNOWN_KANJI_PLACEHOLDER
+                }
               </span>
             </td>
             <td>
               <p>
                 <button
-                  disabled={ progress < 100 }
-                  className={ 'btn ' + (progress < 100 ? 'btn-default' : 'btn-primary') }
+                  disabled={ ! done}
+                  className={ 'btn ' + (done ? 'btn-primary' : 'btn-default') }
                   onClick={onContinueClick}
                 >
                   Continue
                 </button>
               </p>
               <p>
-                <button disabled={ progress >= 100 } className="btn btn-xs btn-default">
+                <button disabled={done} className="btn btn-xs btn-default">
                   Skip
                 </button>
                 <small className="text-muted"> { ' if you are lazy' } </small>
               </p>
               <p>
-                <button disabled={ progress >= 100 } className="btn btn-xs btn-default">
+                <button disabled={done} className="btn btn-xs btn-default">
                   Mark as correct
                 </button>
                 <small className="text-muted"> { ' if it is trivial' } </small>
@@ -90,6 +96,7 @@ AnswerPanel.propTypes = {
   kanji: PropTypes.string.isRequired,
   kanjiSvg: PropTypes.object.isRequired,
   progress: PropTypes.number.isRequired,
+  done: PropTypes.bool.isRequired,
   mistakeCount: PropTypes.number.isRequired,
   onContinueClick: PropTypes.func.isRequired
 }
@@ -102,6 +109,7 @@ export default connect(
       kanji: questionStore.kanji,
       kanjiSvg: questionStore.kanjiSvg,
       progress: questionStore.progress,
+      done: questionStore.progress >= 100,
       mistakeCount: questionStore.mistakeCount
     }
   },

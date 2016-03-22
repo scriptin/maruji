@@ -78,26 +78,26 @@ const updateAnswerOption = (option, correct) => _.assign({}, option, {
                 // to prevent accidental double-clicks
 })
 
-const resetAnswerOption = option => {
+const resetAnswerOption = (option, questionType) => {
   let answeredAndCorrect = option.answered && option.correct
   return _.assign({}, option, {
     answered: answeredAndCorrect,
-    correct: answeredAndCorrect,
+    correct: (questionType == QUESTION_TYPE_STROKE_ORDER) ? answeredAndCorrect : option.correct,
     active: ! answeredAndCorrect // only correct answers stay inactive
   })
 }
 
-const updateSvg = (svg, answerId) => {
+const updateSvgStroke = (svg, answerId) => {
   $(svg.find('.strokes path').toArray()[answerId]).removeClass('muted')
   return svg
 }
 
-function updateStateStrokeOrder(state, action) {
+const updateStateStrokeOrder = (state, action) => {
   let correct = strokeOrderAnswerIsCorect(state.answerQueue, action.payload)
   let optionIdx = state.answerOptions.findIndex(a => a.answerId == action.payload)
 
   let kanjiSvg = correct
-    ? updateSvg(state.kanjiSvg.clone(), action.payload)
+    ? updateSvgStroke(state.kanjiSvg.clone(), action.payload)
     : state.kanjiSvg
   let answerOptions = util.replaceElement(
     state.answerOptions.map(resetAnswerOption),
@@ -109,6 +109,36 @@ function updateStateStrokeOrder(state, action) {
     : state.answerQueue
   let progress = correct
     ? Math.round((state.answerQueue.length + 1) / state.answerOptions.length * 100)
+    : state.progress
+  let mistakeCount = correct
+    ? state.mistakeCount
+    : (state.mistakeCount + 1)
+
+  return _.assign({}, state, {
+    kanjiSvg,
+    answerOptions,
+    answerQueue,
+    progress,
+    mistakeCount
+  })
+}
+
+const updateStateComponents = (state, action) => {
+  let optionIdx = state.answerOptions.findIndex(a => a.answerId == action.payload)
+  let correct = state.answerOptions[optionIdx].correct
+
+  let kanjiSvg = state.kanjiSvg // TODO
+  let answerOptions = util.replaceElement(
+    state.answerOptions.map(resetAnswerOption),
+    optionIdx,
+    updateAnswerOption(state.answerOptions[optionIdx], correct)
+  )
+  let answerQueue = correct
+    ? _.concat(state.answerQueue, action.payload)
+    : state.answerQueue
+  let totalCorrectOptions = state.answerOptions.filter(a => a.correct).length
+  let progress = correct
+    ? Math.round((state.answerQueue.length + 1) / totalCorrectOptions * 100)
     : state.progress
   let mistakeCount = correct
     ? state.mistakeCount
@@ -142,7 +172,7 @@ const questionStore = handleActions({
   [GIVE_ANSWER]: (state, action) => {
     switch (state.type) {
       case QUESTION_TYPE_STROKE_ORDER: return updateStateStrokeOrder(state, action)
-      case QUESTION_TYPE_COMPONENTS: return state;
+      case QUESTION_TYPE_COMPONENTS: return updateStateComponents(state, action)
       default: throw new Error('Unexpected question type: ' + state.type)
     }
   }
