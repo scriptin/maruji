@@ -103,13 +103,16 @@ const getMeta = (elems, root) => elems.map(el => {
       let children = getMeta(elem.children().toArray(), root)
       let isElement = _.has(attrs, 'element')
       let containsStrokes = children.find(c => c.type == TYPE_STROKE) != null
-      let containsPartialGroups = children.find(c =>
-        c.type == TYPE_GROUP && (c.attrs.part || c.attrs.number)
-      ) != null
+      let subgroups = children.filter(c => c.type == TYPE_GROUP)
+      let containsPartialGroups = !!subgroups.find(c => c.attrs.part || c.attrs.number)
+      // Small group is a group with just 1 stroke
+      let containsSmallGroups = !!subgroups.find(c =>
+        c.children.length == 1 && c.children[0].type == TYPE_STROKE
+      )
       return {
         type: TYPE_GROUP,
         id: elem.attr('data-id'),
-        decomposable: isElement && !containsStrokes && !containsPartialGroups,
+        decomposable: isElement && !containsStrokes && !containsPartialGroups && !containsSmallGroups,
         strokeCount: _.sum(children.map(c => c.strokeCount)),
         attrs,
         children
