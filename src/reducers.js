@@ -170,6 +170,7 @@ const questionStore = handleActions({
     isLoading: false
   }),
   [GIVE_ANSWER]: (state, action) => {
+    if (state.progress >= 100) return state
     switch (state.type) {
       case QUESTION_TYPE_STROKE_ORDER: return updateStateOnStrokeOrderAnswer(state, action)
       case QUESTION_TYPE_COMPONENTS: return updateStateOnComponentsAnswer(state, action)
