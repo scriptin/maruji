@@ -51,7 +51,7 @@ const buildOptions = (kanji, kanjiDataList, split, size) => _(kanjiDataList)
     svg: svgUtil.postprocess(svg, size),
     answerId: idx,
     answered: false,
-    correct: kanji == svg.find('.strokes > g').first().attr('kvg:element'),
+    correct: kanji == svg.find('.strokes > g').first().attr(svgUtil.DATA_PREFIX + 'element'),
     active: true
   }))
   .shuffle()

@@ -9,6 +9,9 @@ const buildFrame = (width, height) => {
   return $('<g class="frame">' + rect + diag1 + diag2 + '</g>')
 }
 
+const NAMESPACE = 'kvg:'
+export const DATA_PREFIX = 'data-kvg-'
+
 export const preprocess = svg => {
   // remove stroke numbers:
   svg.find('> g:nth-child(2)').remove()
@@ -16,11 +19,17 @@ export const preprocess = svg => {
   svg.find('> g').removeAttr('style').addClass('strokes')
   // add ordinal numbers to strokes:
   svg.find('path').toArray().forEach((el, idx) => $(el).attr('data-order', idx + 1))
-  // move values of id attributes to data-id to prevent id collisions:
-  svg.find('[id]').toArray().forEach(e => {
+  // to prevent id collision and simplify access to custom attributes, turn them into data-* attributes:
+  svg.find('*').toArray().forEach(e => {
     let elem = $(e)
-    let id = elem.attr('id')
-    elem.removeAttr('id').attr('data-id', id.replace('kvg:', ''))
+    let attrs = _.fromPairs(_.map(e.attributes, ({ name, value }) => [name, value]))
+    _.forEach(attrs, (value, name) => {
+      if (name == 'id') {
+        elem.removeAttr(name).attr('data-id', value.replace(NAMESPACE, ''))
+      } else if (_.startsWith(name, NAMESPACE)) {
+        elem.removeAttr(name).attr(DATA_PREFIX + name.replace(NAMESPACE, ''), value)
+      }
+    })
   })
   return svg
 }
@@ -62,19 +71,19 @@ export const muteAllStrokes = svg => {
 }
 
 const GROUP_ATTRS = {
-  element: _.identity,
-  variant: v => new Boolean(v).valueOf(),
-  radical: _.identity,
-  original: _.identity,
-  position: _.identity,
-  partial: v => new Boolean(v).valueOf(),
-  part: v => new Number(v).valueOf(),
-  number: v => new Number(v).valueOf()
+  element  : _.identity,
+  variant  : v => new Boolean(v).valueOf(),
+  radical  : _.identity,
+  original : _.identity,
+  position : _.identity,
+  partial  : v => new Boolean(v).valueOf(),
+  part     : v => new Number(v).valueOf(),
+  number   : v => new Number(v).valueOf()
 }
 
 const convertAttributes = (attrs, whitelist) => {
   return _(attrs).values()
-    .map(({ name, value }) => ({ name: name.replace('kvg:', ''), value }))
+    .map(({ name, value }) => ({ name: name.replace(DATA_PREFIX, ''), value }))
     .filter(({ name, value }) => _.includes(_.keys(whitelist), name))
     .map(({ name, value }) => [name, whitelist[name](value)])
     .fromPairs()
@@ -111,7 +120,7 @@ const getMeta = (elems, root) => elems.map(el => {
       strokeCount: 1
     }
     default: throw new Error(
-      'Unexpected tag "' + type + '" in kanji "' + root.attr('kvg\\:element') + '"'
+      'Unexpected tag "' + type + '" in kanji "' + root.attr(DATA_PREFIX + 'element') + '"'
     )
   }
 })
