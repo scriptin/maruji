@@ -92,7 +92,7 @@ const updateSvgStroke = (svg, answerId) => {
   return svg
 }
 
-const updateStateStrokeOrder = (state, action) => {
+const updateStateOnStrokeOrderAnswer = (state, action) => {
   let correct = strokeOrderAnswerIsCorect(state.answerQueue, action.payload)
   let optionIdx = state.answerOptions.findIndex(a => a.answerId == action.payload)
 
@@ -123,7 +123,7 @@ const updateStateStrokeOrder = (state, action) => {
   })
 }
 
-const updateStateComponents = (state, action) => {
+const updateStateOnComponentsAnswer = (state, action) => {
   let optionIdx = state.answerOptions.findIndex(a => a.answerId == action.payload)
   let correct = state.answerOptions[optionIdx].correct
 
@@ -171,8 +171,8 @@ const questionStore = handleActions({
   }),
   [GIVE_ANSWER]: (state, action) => {
     switch (state.type) {
-      case QUESTION_TYPE_STROKE_ORDER: return updateStateStrokeOrder(state, action)
-      case QUESTION_TYPE_COMPONENTS: return updateStateComponents(state, action)
+      case QUESTION_TYPE_STROKE_ORDER: return updateStateOnStrokeOrderAnswer(state, action)
+      case QUESTION_TYPE_COMPONENTS: return updateStateOnComponentsAnswer(state, action)
       default: throw new Error('Unexpected question type: ' + state.type)
     }
   }
