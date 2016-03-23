@@ -3,7 +3,7 @@
   "name": "maruji",
   "version": "0.1.0",
   "description": "Alien technology for learning kanji",
-  "main": "build-data.js",
+  "main": "src/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node_modules/webpack-dev-server/bin/webpack-dev-server.js --content-base build/"
