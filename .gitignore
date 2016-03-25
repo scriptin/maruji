@@ -1,8 +1,9 @@
 node_modules/
 npm-debug.log
 
-data-in/*.json
 data-in/*.tsv
+data-in/*.json
+!data-in/similar-kanji.json
 
 build/**
 !build/.gitkeep
