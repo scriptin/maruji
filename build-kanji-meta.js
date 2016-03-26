@@ -74,19 +74,28 @@ const weightComponents = comps => {
   })
 }
 
-// Usually returns values below 2, with maximum at about 4
-const similarity = (weightedComponents1, strokeCount1, weightedComponents2, strokeCount2) => {
-  let common = _.intersection(
-    _.uniq(weightedComponents1.map(c => c.component)),
-    _.uniq(weightedComponents2.map(c => c.component))
-  )
-  let w1 = weightedComponents1.map(c => _.includes(common, c.component) ? c.weight : 0)
-  let w2 = weightedComponents2.map(c => _.includes(common, c.component) ? c.weight : 0)
+// Usually returns values below 1, with maximum at about 4-8. Presumbly normal distribution or similar
+const similarity = (
+  weightedComponents1, strokeCount1,
+  weightedComponents2, strokeCount2,
+  similarityMap
+) => {
+  let comps1 = _.uniq(weightedComponents1.map(c => c.component))
+  let comps2 = _.uniq(weightedComponents2.map(c => c.component))
+  let common = _.intersection(comps1, comps2)
+  let weigths = weightedComponents2.map(c2 => {
+    if (_.includes(common, c2.component)) return c2.weight
+    let maxSimilarityScore = _(comps1)
+      .filter(c => similarityMap[c])
+      .map(c => similarityMap[c][c2.component] || 0)
+      .max() || 0
+    return c2.weight * maxSimilarityScore
+  })
   let strokeCountRatio = Math.min(strokeCount1, strokeCount2) / Math.max(strokeCount1, strokeCount2)
-  return (_.sum(w1) + _.sum(w2)) * strokeCountRatio
+  return _.sum(weigths) * strokeCountRatio
 }
 
-const buildSvgData = kanjiList => Promise.all(
+const buildSvgMap = kanjiList => Promise.all(
   kanjiList.map(kanji => {
     return read(fileName(kanji))
       .then(parseXML)
@@ -94,15 +103,17 @@ const buildSvgData = kanjiList => Promise.all(
   })
 ).then(_.fromPairs)
 
-const buildSimilarityData = (kanjiList, similarPairs) => {
-  const addToSet = (set, elem) => _.uniq(_.concat(set, elem))
-  let result = _.fromPairs(
-    kanjiList.map(k => [ k, [] ])
-  )
-  similarPairs.forEach(pair => {
+const buildSimilarityMap = (kanjiList, similarPairs) => {
+  let result = {}
+  const init = kanji => {
+    if ( ! result[kanji]) result[kanji] = {}
+  }
+  _.forEach(similarPairs, (score, pairString) => {
+    let pair = pairString.split('')
     let a = pair[0], b = pair[1]
-    result[a] = addToSet(result[a], b)
-    result[b] = addToSet(result[b], a)
+    init(a)
+    init(b)
+    result[a][b] = result[b][a] = score/10
   })
   return result
 }
@@ -110,21 +121,21 @@ const buildSimilarityData = (kanjiList, similarPairs) => {
 console.log('Reading kanji list and similar kanji pairs...')
 Promise.join(
   getJSON(KANJI_LIST_FILE),
-  getJSON(SIMILAR_KANJI_FILE).then(pairs => pairs.map(p => p.split(''))),
+  getJSON(SIMILAR_KANJI_FILE),
   (kanjiList, similarPairs) => {
     console.log('Building svg objects map and similarity map...')
     Promise.join(
-      buildSvgData(kanjiList),
-      buildSimilarityData(kanjiList, similarPairs),
-      (svgData, similarityData) => {
+      buildSvgMap(kanjiList),
+      buildSimilarityMap(kanjiList, similarPairs),
+      (svgMap, similarityMap) => {
         console.log('Decomposing kanji...')
-        let componentsMap = _(svgData)
+        let componentsMap = _(svgMap)
           .map((svg, kanji) => [kanji, decompose(svg)])
           .fromPairs()
           .value()
         // console.log(componentsMap)
 
-        let strokeCountMap = _(svgData)
+        let strokeCountMap = _(svgMap)
           .map((svg, kanji) => [kanji, countStrokes(svg)])
           .fromPairs()
           .value()
@@ -138,7 +149,7 @@ Promise.join(
         // console.log(weightedComponentsMap)
 
         console.log('Picking most similar kanji...')
-        let items = _(kanjiList).map((thisKanji, idx) => {
+        let items = _(kanjiList).take(20).map((thisKanji, idx) => {
           if ((idx + 1) % 100 == 0) console.log((idx + 1) + ' of ' + kanjiList.length)
           let similarKanji = _(kanjiList)
             .filter(k => k != thisKanji)
@@ -146,7 +157,8 @@ Promise.join(
               kanji: otherKanji,
               similarity: similarity(
                 weightedComponentsMap[thisKanji], strokeCountMap[thisKanji],
-                weightedComponentsMap[otherKanji], strokeCountMap[otherKanji]
+                weightedComponentsMap[otherKanji], strokeCountMap[otherKanji],
+                similarityMap
               )
             }))
             .sort((a, b) => b.similarity - a.similarity)
