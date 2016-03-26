@@ -7,15 +7,18 @@ const Promise = require('bluebird')
 Promise.promisifyAll(fs)
 
 const KANJI_LIST_FILE = 'data-in/kanji-list.json'
+const SIMILAR_KANJI_FILE = 'data-in/similar-kanji.json'
 const KANJIVG_DIR = 'src/resources/kanjivg/'
 const JUNK_REGEXP = /[A-Z\ud840-\udfff\/？\+]+/gi
 
 const charCode = char => char.charCodeAt(0).toString(16)
 const kanjiCode = kanji => _.padStart(charCode(kanji), 5, '0')
+const fileName = kanji => KANJIVG_DIR + kanjiCode(kanji) + '.svg'
 
 const read = file => fs.readFileAsync(file, 'utf8')
+const getJSON = fileName => read(fileName).then(text => JSON.parse(text))
 
-const parse = xmlString => new Promise((resolve, reject) => {
+const parseXML = xmlString => new Promise((resolve, reject) => {
   parseString(
     xmlString,
     { async: true },
@@ -24,7 +27,6 @@ const parse = xmlString => new Promise((resolve, reject) => {
 })
 
 const containsGroups = g => g.g && _.isArray(g.g) && ! _.isEmpty(g.g)
-const containsPaths = g => g.path && _.isArray(g.path) && ! _.isEmpty(g.path)
 
 const transformSvgGroup = (g, level) => {
   let elem = g.$['kvg:element'] || g.$['kvg:phon'] || '？'
@@ -40,60 +42,103 @@ const transformSvgGroup = (g, level) => {
   return value ? [key].concat(_.flatten(value)) : [key]
 }
 
-const decomp = svg => _.tail(transformSvgGroup(svg.svg.g[0].g[0], 0)).sort()
+const decompose = svg => _.tail(transformSvgGroup(svg.svg.g[0].g[0], 0)).sort()
 
-let kanjiList
-
-const weightComps = comps => {
+const weightComponents = comps => {
   return _.flatMap(comps, c => {
     let parts = c.split(':')
     let level = parts[0]
     if (level > 3) return []
     let elem = parts[2]
+    let weight = 1 / Math.pow(level, 1.5)
     return elem
       .replace(JUNK_REGEXP, '')
       .split('')
-      .map(char => [char, 1 / Math.pow(level, 2)])
+      .map(component => ({ component, weight }))
   })
 }
 
-const similarity = (k1, k2, weights) => {
-  return _.sum(
-    weights[k1].map(w1 => {
-      let corresponding = weights[k2].filter(w2 => w1[0] == w2[0])
-      return _.sum(corresponding.map(w2 => w1[1]*w2[1])) || 0
-    })
-  ) || 0
+const similarity = (weightedComponents1, weightedComponents2) => {
+  let common = _.intersection(
+    _.uniq(weightedComponents1.map(c => c.component)),
+    _.uniq(weightedComponents2.map(c => c.component))
+  )
+  let w1 = weightedComponents1.map(c => _.includes(common, c.component) ? c.weight : 0)
+  let w2 = weightedComponents2.map(c => _.includes(common, c.component) ? c.weight : 0)
+  return _.sum(w1) + _.sum(w2)
 }
 
-read(KANJI_LIST_FILE)
-  .then(kanjiListText => {
-    kanjiList = JSON.parse(kanjiListText)
-    return kanjiList.map(kanji => [
-      kanji,
-      KANJIVG_DIR + kanjiCode(kanji) + '.svg'
-    ])
+const buildSvgData = kanjiList => Promise.all(
+  kanjiList.map(kanji => {
+    return read(fileName(kanji))
+      .then(parseXML)
+      .then(svg => [kanji, svg])
   })
-  .map(pair => read(pair[1]).then(parse).then(svg => [pair[0], svg]))
-  .all()
-  .then(pairs => {
-    let items = _(pairs)
-      .map(pair => [pair[0], { components: decomp(pair[1]) }])
-      .fromPairs()
-      .value()
-    let weightedComponents = _(items)
-      .map((item, kanji) => [kanji, weightComps(item.components)])
-      .fromPairs()
-      .value()
-    _.forEach(items, (item, kanji) => {
-      item.similar = _(kanjiList)
-        .filter(k => k != kanji)
-        .map(k => [k, similarity(kanji, k, weightedComponents)])
-        .sort((a, b) => b[1] - a[1])
-        .map(pair => pair[0])
-        .take(20)
-        .value()
-        .join('')
-    })
-    console.log(JSON.stringify(items, null, '  '))
+).then(_.fromPairs)
+
+const buildSimilarityData = (kanjiList, similarPairs) => {
+  const addToSet = (set, elem) => _.uniq(_.concat(set, elem))
+  let result = _.fromPairs(
+    kanjiList.map(k => [ k, [] ])
+  )
+  similarPairs.forEach(pair => {
+    let a = pair[0], b = pair[1]
+    result[a] = addToSet(result[a], b)
+    result[b] = addToSet(result[b], a)
   })
+  return result
+}
+
+console.log('Reading kanji list and similar kanji pairs...')
+Promise.join(
+  getJSON(KANJI_LIST_FILE),
+  getJSON(SIMILAR_KANJI_FILE).then(pairs => pairs.map(p => p.split(''))),
+  (kanjiList, similarPairs) => {
+    console.log('Building svg objects map and similarity map...')
+    Promise.join(
+      buildSvgData(kanjiList),
+      buildSimilarityData(kanjiList, similarPairs),
+      (svgData, similarityData) => {
+        console.log('Decomposing kanji...')
+        let componentsMap = _(svgData)
+          .map((svg, kanji) => [kanji, decompose(svg)])
+          .fromPairs()
+          .value()
+        // console.log(componentsMap)
+
+        console.log('Calculating component weigths...')
+        let weightedComponentsMap = _(componentsMap)
+          .map((comps, kanji) => [kanji, weightComponents(comps)])
+          .fromPairs()
+          .value()
+        // console.log(weightedComponentsMap)
+
+        console.log('Picking most similar kanji...')
+        let items = _(kanjiList).map((thisKanji, idx) => {
+          if ((idx + 1) % 100 == 0) console.log((idx + 1) + ' of ' + kanjiList.length)
+          let similarKanji = _(kanjiList)
+            .filter(k => k != thisKanji)
+            .map(otherKanji => ({
+              kanji: otherKanji,
+              similarity: similarity(
+                weightedComponentsMap[thisKanji],
+                weightedComponentsMap[otherKanji]
+              )
+            }))
+            .sort((a, b) => b.similarity - a.similarity)
+            .takeWhile((o, idx) => idx < 20 && o.similarity > 0.5)
+            .map(o => o.kanji)
+            .value()
+            .join('')
+          return {
+            kanji: thisKanji,
+            components: componentsMap[thisKanji],
+            similar: similarKanji
+          }
+        })
+
+        console.log(JSON.stringify(items, null, '  '))
+      }
+    )
+  }
+)
