@@ -3,6 +3,7 @@ npm-debug.log
 
 data-in/*.tsv
 data-in/*.json
+!data-in/kanji-list.json
 !data-in/similar-kanji.json
 
 build/**
