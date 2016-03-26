@@ -44,7 +44,7 @@ const extractSvgGroups = (g, level) => {
   return value ? [key].concat(_.flatten(value)) : [key]
 }
 
-const decompose = svg => _.tail(extractSvgGroups(getSvgRoot(svg), 0)).sort()
+const decompose = svg => extractSvgGroups(getSvgRoot(svg), 0).sort()
 
 const extractSvgPathCount = svg => {
   let selfStrokes = 0
@@ -66,7 +66,7 @@ const weightComponents = comps => {
     let level = parts[0]
     if (level > 3) return []
     let elem = parts[2]
-    let weight = 1 / Math.pow(level, 1.5)
+    let weight = 1 / Math.pow(level + 1, 1.5)
     return elem
       .replace(JUNK_REGEXP, '')
       .split('')
