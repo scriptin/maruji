@@ -4,8 +4,8 @@ const _ = require('lodash')
 const Promise = require('bluebird')
 const util = require('./build-util')
 
-const SIMILARITY_THRESHOLD = 0.01
-const MIN_SIMILAR = 20
+// How many kanji to take from the similarity-ordered list
+const SIMILAR_LIST_LENGTH = 20
 
 const getSvgRoot = svg => svg.svg.g[0].g[0]
 const containsGroups = g => g.g && _.isArray(g.g) && ! _.isEmpty(g.g)
@@ -138,7 +138,7 @@ Promise.join(
               )
             }))
             .sort((a, b) => b.similarity - a.similarity)
-            .takeWhile((o, idx) => idx < MIN_SIMILAR || o.similarity > SIMILARITY_THRESHOLD)
+            .take(SIMILAR_LIST_LENGTH)
             .map(o => o.kanji)
             .join('')
           return [ thisKanji, similarKanji ]
