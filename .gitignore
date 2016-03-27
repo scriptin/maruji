@@ -1,13 +1,18 @@
 node_modules/
 npm-debug.log
 
-data-in/*.tsv
-data-in/*.json
-!data-in/kanji-list.json
-!data-in/similar-kanji.json
+# Ignore large input files, so that repository can be loaded to GitHub
+# GitHub has a hard limit of 100MB per file
+data/data-in/*.tsv
+data/data-in/*.json
+# These two files are small:
+!data/data-in/kanji-list.json
+!data/data-in/similar-kanji.json
 
-data-out/**
-!data-out/.gitkeep
+# Output data
+data/data-out/**
+!data/data-out/.gitkeep
 
+# Temporary build files
 build/**
 !build/.gitkeep
