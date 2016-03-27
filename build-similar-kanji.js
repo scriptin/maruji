@@ -6,8 +6,11 @@ const parseString = require('xml2js').parseString
 const Promise = require('bluebird')
 Promise.promisifyAll(fs)
 
-const KANJI_LIST_FILE = 'data-in/kanji-list.json'
-const SIMILAR_KANJI_FILE = 'data-in/similar-kanji.json'
+const DATA_IN_DIR = 'data-in/'
+const DATA_OUT_DIR = 'data-out/'
+const KANJI_LIST_FILE = DATA_IN_DIR + 'kanji-list.json'
+const SIMILAR_KANJI_FILE = DATA_IN_DIR + 'similar-kanji.json'
+const OUT_FILE = DATA_OUT_DIR + 'similar-kanji.json'
 const KANJIVG_DIR = 'src/resources/kanjivg/'
 const JUNK_REGEXP = /[A-Z\ud840-\udfff\/？\+]+/gi
 
@@ -151,8 +154,7 @@ Promise.join(
         // console.log(weightedComponentsMap)
 
         console.log('Picking most similar kanji...')
-        const samples = (k, idx) => idx < 20 || (idx > 1000 && idx < 1020) || idx > 2230
-        let items = _(kanjiList).filter(samples).map((thisKanji, idx) => {
+        let items = _(kanjiList).map((thisKanji, idx) => {
           if ((idx + 1) % 100 == 0) console.log((idx + 1) + ' of ' + kanjiList.length)
           let similarKanji = _(kanjiList)
             .filter(k => k != thisKanji)
@@ -167,16 +169,16 @@ Promise.join(
             .sort((a, b) => b.similarity - a.similarity)
             .takeWhile((o, idx) => idx < MIN_SIMILAR || o.similarity > SIMILARITY_THRESHOLD)
             .map(o => o.kanji)
-            .value()
             .join('')
-          return {
-            kanji: thisKanji,
-            components: componentsMap[thisKanji],
-            similar: similarKanji
-          }
-        })
+          return [ thisKanji, similarKanji ]
+        }).fromPairs().value()
 
-        console.log(JSON.stringify(items, null, '  '))
+        console.log('Writing to "' + OUT_FILE + '"...')
+        fs.writeFileAsync(
+          OUT_FILE,
+          JSON.stringify(items, null, '  '),
+          'utf8'
+        ).then(() => console.log('Done!'))
       }
     )
   }
