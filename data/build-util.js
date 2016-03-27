@@ -7,9 +7,9 @@ Promise.promisifyAll(fs)
 const parseString = require('xml2js').parseString
 const https = require('https')
 
-const DATA_IN_DIR = 'data-in/'
-const DATA_OUT_DIR = 'data-out/'
-const KANJIVG_DIR = 'src/resources/kanjivg/'
+const DATA_IN_DIR  = __dirname + '/data-in/'
+const DATA_OUT_DIR = __dirname + '/data-out/'
+const KANJIVG_DIR  = __dirname + '/../src/resources/kanjivg/'
 
 const read = file => fs.readFileAsync(file, 'utf8')
 const write = (file, text) => fs.writeFileAsync(file, text, 'utf8')
