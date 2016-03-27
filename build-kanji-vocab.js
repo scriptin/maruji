@@ -8,7 +8,7 @@ var
   KANJI_LIST_FILE = DATA_IN_DIR + 'kanji-list.json',
   DICT_FILE = DATA_IN_DIR + 'jmdict-eng.json',
   WORD_FREQ_FILE = DATA_IN_DIR + 'wikipedia-20150422-lemmas.tsv',
-  KANJI_DEFS_FILE = 'data-out/kanji-defs.json',
+  KANJI_DEFS_FILE = 'data-out/kanji-vocab.json',
   KANJI_REGEXP = /[\u4e00-\u9fff]+/g,
   MAX_WORDS = 10,
   EXCLUDED_TAGS = [
@@ -37,7 +37,7 @@ Promise.join(
     var dict = JSON.parse(dictData);
     var wordFreq = wordFreqData.split('\n').map((line) => _.last(line.split('\t')));
 
-    console.log('Patching/fixing the distionary...');
+    console.log('Patching/fixing the dictionary...');
     dictPatches.forEach((patch) => patch(dict));
     console.log(dictPatches.length + ' patch applied');
 
