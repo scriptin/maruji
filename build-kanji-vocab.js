@@ -36,8 +36,8 @@ const hasExcludedTags = tags => ! _.isEmpty(_.intersection(EXCLUDED_TAGS, tags))
 
 const applies = (appliesList, all) => _.includes(appliesList, '*') || ! _.isEmpty(_.intersection(all, appliesList))
 
-const buildDefs = (kanjiList, dict, wordFreqHash) => {
-  let kanjiDefs = {
+const buildKanjiVocab = (kanjiList, dict, wordFreqHash) => {
+  let kanjiVocab = {
     kanji: _(kanjiList).map(kanji => [ kanji, [] ]).fromPairs().value(),
     words: {}
   }
@@ -59,15 +59,15 @@ const buildDefs = (kanjiList, dict, wordFreqHash) => {
     if (_.isEmpty(ts)) return
 
     let wordId = '' + word.id
-    kanjiDefs.words[wordId] = buildCompactWord(w, rs, ts)
+    kanjiVocab.words[wordId] = buildCompactWord(w, rs, ts)
     w.text.split('').forEach(char => {
-      if ( ! _.isUndefined(kanjiDefs.kanji[char])) {
-        kanjiDefs.kanji[char].push(wordId)
+      if ( ! _.isUndefined(kanjiVocab.kanji[char])) {
+        kanjiVocab.kanji[char].push(wordId)
       }
     })
   })
 
-  return kanjiDefs
+  return kanjiVocab
 }
 
 const getText = obj => obj.text
@@ -98,11 +98,11 @@ const getTranslations = (word, writing, readings) => {
   })
 }
 
-const validateDefs = defs => {
-  noneExist(defs.kanji, (kanji, refs) => _.isEmpty(refs), 'Kanji without refs to words')
-  noneExist(defs.words, (id, word) => _.isEmpty(word.w), 'Words without writings')
-  noneExist(defs.words, (id, word) => _.isEmpty(word.r), 'Words without readings')
-  noneExist(defs.words, (id, word) => _.isEmpty(word.t), 'Words without translations')
+const validateKanjiVocab = kanjiVocab => {
+  noneExist(kanjiVocab.kanji, (kanji, refs) => _.isEmpty(refs), 'Kanji without refs to words')
+  noneExist(kanjiVocab.words, (id, word) => _.isEmpty(word.w), 'Words without writings')
+  noneExist(kanjiVocab.words, (id, word) => _.isEmpty(word.r), 'Words without readings')
+  noneExist(kanjiVocab.words, (id, word) => _.isEmpty(word.t), 'Words without translations')
 }
 
 const noneExist = (obj, filter, description) => {
@@ -127,22 +127,22 @@ const buildCompactWord = (writing, readings, translations) => {
   }
 }
 
-const optimizeDefs = (defs, workFreqHash, topN) => {
+const optimizeKanjiVocab = (kanjiVocab, workFreqHash, topN) => {
   let usedRefs = {}
 
-  _.keys(defs.kanji).forEach(kanji => {
+  _.keys(kanjiVocab.kanji).forEach(kanji => {
     // Sort lists of refs by frequencies of corresponding words
-    defs.kanji[kanji] = defs.kanji[kanji].sort((a, b) => {
-      let wa = defs.words[a].w
-      let wb = defs.words[b].w
+    kanjiVocab.kanji[kanji] = kanjiVocab.kanji[kanji].sort((a, b) => {
+      let wa = kanjiVocab.words[a].w
+      let wb = kanjiVocab.words[b].w
       return (workFreqHash[wa] || -1) - (workFreqHash[wb] || -1)
     }).slice(0, topN)
-    defs.kanji[kanji].forEach(ref => usedRefs[ref] = true)
+    kanjiVocab.kanji[kanji].forEach(ref => usedRefs[ref] = true)
   })
 
   // Remove words which are not referenced from any kanji ref lists
-  defs.words = _.fromPairs(
-    _.toPairs(defs.words).filter(pair => usedRefs[pair[0]])
+  kanjiVocab.words = _.fromPairs(
+    _.toPairs(kanjiVocab.words).filter(pair => usedRefs[pair[0]])
   )
 }
 
@@ -155,7 +155,7 @@ Promise.join(
   (kanjiList, dict, wordFreq) => {
     console.log('Patching/fixing the dictionary...')
     dictPatches.forEach(patch => patch(dict))
-    console.log(dictPatches.length + ' patch applied')
+    console.log(dictPatches.length + ' patch(es) applied')
 
     console.log('Extracting all words from the dictionary which have any kanji from the list...')
     let wordsWithKanji = getWordsWithKanji(dict, kanjiList)
@@ -169,16 +169,16 @@ Promise.join(
     console.log('Building a lookup hash for word frequencies...')
     let workFreqHash = util.toLookupHash(wordFreqList)
 
-    console.log('Building kanji definitions...')
-    let defs = buildDefs(kanjiList, dict, workFreqHash)
-    console.log('Optimizing definitions...')
-    optimizeDefs(defs, workFreqHash, MAX_WORDS)
-    console.log('Validating...')
-    validateDefs(defs)
-    console.log('Number of words in a final definitions: ' + _.keys(defs.words).length)
+    console.log('Building kanji-vocab data...')
+    let kanjiVocab = buildKanjiVocab(kanjiList, dict, workFreqHash)
+    console.log('Optimizing kanji-vocab data...')
+    optimizeKanjiVocab(kanjiVocab, workFreqHash, MAX_WORDS)
+    console.log('Validating kanji-vocab data...')
+    validateKanjiVocab(kanjiVocab)
+    console.log('Number of words in a final kanji-vocab data: ' + _.keys(kanjiVocab.words).length)
 
     console.log('Writing to file "' + util.KANJI_VOCAB_OUT_FILE + '"...')
-    util.write(util.KANJI_VOCAB_OUT_FILE, JSON.stringify(defs, null, '  '))
+    util.write(util.KANJI_VOCAB_OUT_FILE, JSON.stringify(kanjiVocab, null, '  '))
       .then(() => console.log('Done'))
   }
 )
