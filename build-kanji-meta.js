@@ -11,6 +11,9 @@ const SIMILAR_KANJI_FILE = 'data-in/similar-kanji.json'
 const KANJIVG_DIR = 'src/resources/kanjivg/'
 const JUNK_REGEXP = /[A-Z\ud840-\udfff\/？\+]+/gi
 
+const SIMILARITY_THRESHOLD = 0.01
+const MIN_SIMILAR = 20
+
 const charCode = char => char.charCodeAt(0).toString(16)
 const kanjiCode = kanji => _.padStart(charCode(kanji), 5, '0')
 const fileName = kanji => KANJIVG_DIR + kanjiCode(kanji) + '.svg'
@@ -74,25 +77,24 @@ const weightComponents = comps => {
   })
 }
 
-// Usually returns values below 1, with maximum at about 4-8. Presumbly normal distribution or similar
+const componentsSimilarity = (c1, c2, similarityMap) => {
+  let a = c1.component, b = c2.component
+  let weight = c1.weight * c2.weight
+  let similarity = (similarityMap[a] && similarityMap[a][b]) ? similarityMap[a][b] : 0
+  return (a == b) ? weight : weight * similarity
+}
+
+// Returns numbers in (0, 1) interval, presumbly with normal distribution or similar
 const similarity = (
-  weightedComponents1, strokeCount1,
-  weightedComponents2, strokeCount2,
+  weightedComponents1, nStrokes1,
+  weightedComponents2, nStrokes2,
   similarityMap
 ) => {
-  let comps1 = _.uniq(weightedComponents1.map(c => c.component))
-  let comps2 = _.uniq(weightedComponents2.map(c => c.component))
-  let common = _.intersection(comps1, comps2)
-  let weigths = weightedComponents2.map(c2 => {
-    if (_.includes(common, c2.component)) return c2.weight
-    let maxSimilarityScore = _(comps1)
-      .filter(c => similarityMap[c])
-      .map(c => similarityMap[c][c2.component] || 0)
-      .max() || 0
-    return c2.weight * maxSimilarityScore
-  })
-  let strokeCountRatio = Math.min(strokeCount1, strokeCount2) / Math.max(strokeCount1, strokeCount2)
-  return _.sum(weigths) * strokeCountRatio
+  let score = _(weightedComponents1).flatMap(c1 => {
+    return weightedComponents2.map(c2 => componentsSimilarity(c1, c2, similarityMap))
+  }).sum()
+  let strokeCountRatio = Math.pow(Math.min(nStrokes1, nStrokes2) / Math.max(nStrokes1, nStrokes2), 2)
+  return score * strokeCountRatio
 }
 
 const buildSvgMap = kanjiList => Promise.all(
@@ -113,7 +115,7 @@ const buildSimilarityMap = (kanjiList, similarPairs) => {
     let a = pair[0], b = pair[1]
     init(a)
     init(b)
-    result[a][b] = result[b][a] = score/10
+    result[a][b] = result[b][a] = Math.pow(score/20, 2)
   })
   return result
 }
@@ -149,7 +151,8 @@ Promise.join(
         // console.log(weightedComponentsMap)
 
         console.log('Picking most similar kanji...')
-        let items = _(kanjiList).take(20).map((thisKanji, idx) => {
+        const samples = (k, idx) => idx < 20 || (idx > 1000 && idx < 1020) || idx > 2230
+        let items = _(kanjiList).filter(samples).map((thisKanji, idx) => {
           if ((idx + 1) % 100 == 0) console.log((idx + 1) + ' of ' + kanjiList.length)
           let similarKanji = _(kanjiList)
             .filter(k => k != thisKanji)
@@ -162,7 +165,7 @@ Promise.join(
               )
             }))
             .sort((a, b) => b.similarity - a.similarity)
-            .takeWhile((o, idx) => idx < 20 || o.similarity > 3)
+            .takeWhile((o, idx) => idx < MIN_SIMILAR || o.similarity > SIMILARITY_THRESHOLD)
             .map(o => o.kanji)
             .value()
             .join('')
