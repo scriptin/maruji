@@ -6,5 +6,8 @@ data-in/*.json
 !data-in/kanji-list.json
 !data-in/similar-kanji.json
 
+data-out/**
+!data-out/.gitkeep
+
 build/**
 !build/.gitkeep
