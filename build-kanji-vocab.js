@@ -1,16 +1,9 @@
 'use strict'
 
 const _ = require('lodash')
-const fs = require('fs')
 const Promise = require('bluebird')
-Promise.promisifyAll(fs)
+const util = require('./build-util')
 
-const DATA_IN_DIR = 'data-in/'
-const KANJI_LIST_FILE = DATA_IN_DIR + 'kanji-list.json'
-const DICT_FILE = DATA_IN_DIR + 'jmdict-eng.json'
-const WORD_FREQ_FILE = DATA_IN_DIR + 'wikipedia-20150422-lemmas.tsv'
-const KANJI_DEFS_FILE = 'data-out/kanji-vocab.json'
-const KANJI_REGEXP = /[\u4e00-\u9fff]+/g
 const MAX_WORDS = 10
 const EXCLUDED_TAGS = [
   'iK', 'ik',
@@ -26,58 +19,6 @@ const dictPatches = [
     dict.words[idx].kana[0].appliesToKanji = [ '*' ]
   }
 ]
-
-console.log('Reading data files...')
-Promise.join(
-  fs.readFileAsync(KANJI_LIST_FILE, 'utf8'),
-  fs.readFileAsync(DICT_FILE, 'utf8'),
-  fs.readFileAsync(WORD_FREQ_FILE, 'utf8'),
-  (kanjiListData, dictData, wordFreqData) => {
-    console.log('Parsing data files...')
-    let kanjiList = JSON.parse(kanjiListData)
-    let dict = JSON.parse(dictData)
-    let wordFreq = wordFreqData.split('\n').map(line => _.last(line.split('\t')))
-
-    console.log('Patching/fixing the dictionary...')
-    dictPatches.forEach(patch => patch(dict))
-    console.log(dictPatches.length + ' patch applied')
-
-    console.log('Extracting all words from the dictionary which have any kanji from the list...')
-    let wordsWithKanji = getWordsWithKanji(dict, kanjiList)
-    console.log('Found ' + wordsWithKanji.length + ' words')
-
-    console.log('Filtering the frequency-ordered word list...')
-    let wordsWithKanjiHash = toLookupHash(wordsWithKanji)
-    let wordFreqList = wordFreq.filter(w => wordsWithKanjiHash[w] >= 0)
-    console.log('Filtered down to ' + wordFreqList.length + ' words')
-
-    console.log('Building a lookup hash for word frequencies...')
-    let workFreqHash = toLookupHash(wordFreqList)
-
-    console.log('Building kanji definitions...')
-    let defs = buildDefs(kanjiList, dict, workFreqHash)
-
-    console.log('Optimizing definitions...')
-    optimizeDefs(defs, workFreqHash, MAX_WORDS)
-
-    console.log('Validating...')
-    validateDefs(defs)
-
-    console.log('Number of words in a final definitions: ' + _.keys(defs.words).length)
-
-    console.log('Writing to file "' + KANJI_DEFS_FILE + '"...')
-    return fs.writeFile(KANJI_DEFS_FILE, JSON.stringify(defs, null, '  '), 'utf8')
-  }
-).then(() => console.log('Done'))
-
-const toLookupHash = arr => {
-  let i = 0
-  return arr.reduce((hash, elem) => {
-    hash[elem] = i
-    i += 1
-    return hash
-  }, {})
-}
 
 const containsAnyCharacter = (word, chars) => ! _.isUndefined(chars.find(char => _.includes(word, char)))
 
@@ -95,13 +36,6 @@ const hasExcludedTags = tags => ! _.isEmpty(_.intersection(EXCLUDED_TAGS, tags))
 
 const applies = (appliesList, all) => _.includes(appliesList, '*') || ! _.isEmpty(_.intersection(all, appliesList))
 
-const reportProgress = (idx, total, batchSize) => {
-  if ((idx + 1) % batchSize == 0) {
-    let percent = ((idx + 1) / total * 100) | 0
-    console.log((idx + 1) + ' of ' + total + ' (' + percent + '%)')
-  }
-}
-
 const buildDefs = (kanjiList, dict, wordFreqHash) => {
   let kanjiDefs = {
     kanji: _(kanjiList).map(kanji => [ kanji, [] ]).fromPairs().value(),
@@ -110,7 +44,7 @@ const buildDefs = (kanjiList, dict, wordFreqHash) => {
 
   let wordsTotal = dict.words.length
   dict.words.forEach((word, idx) => {
-    reportProgress(idx, wordsTotal, 10000)
+    util.reportProgress(idx, wordsTotal, 10000)
 
     // Ignore kana-only words
     if (word.kanji.length == 0) return
@@ -211,3 +145,40 @@ const optimizeDefs = (defs, workFreqHash, topN) => {
     _.toPairs(defs.words).filter(pair => usedRefs[pair[0]])
   )
 }
+
+console.log('Reading data files...')
+Promise.join(
+  util.readJSON(util.KANJI_LIST_FILE),
+  util.readJSON(util.DICT_FILE),
+  util.read(util.WORD_FREQ_FILE)
+    .then(text => text.split('\n').map(line => _.last(line.split('\t')))),
+  (kanjiList, dict, wordFreq) => {
+    console.log('Patching/fixing the dictionary...')
+    dictPatches.forEach(patch => patch(dict))
+    console.log(dictPatches.length + ' patch applied')
+
+    console.log('Extracting all words from the dictionary which have any kanji from the list...')
+    let wordsWithKanji = getWordsWithKanji(dict, kanjiList)
+    console.log('Found ' + wordsWithKanji.length + ' words')
+
+    console.log('Filtering the frequency-ordered word list...')
+    let wordsWithKanjiHash = util.toLookupHash(wordsWithKanji)
+    let wordFreqList = wordFreq.filter(w => wordsWithKanjiHash[w] >= 0)
+    console.log('Filtered down to ' + wordFreqList.length + ' words')
+
+    console.log('Building a lookup hash for word frequencies...')
+    let workFreqHash = util.toLookupHash(wordFreqList)
+
+    console.log('Building kanji definitions...')
+    let defs = buildDefs(kanjiList, dict, workFreqHash)
+    console.log('Optimizing definitions...')
+    optimizeDefs(defs, workFreqHash, MAX_WORDS)
+    console.log('Validating...')
+    validateDefs(defs)
+    console.log('Number of words in a final definitions: ' + _.keys(defs.words).length)
+
+    console.log('Writing to file "' + util.KANJI_VOCAB_OUT_FILE + '"...')
+    util.write(util.KANJI_VOCAB_OUT_FILE, JSON.stringify(defs, null, '  '))
+      .then(() => console.log('Done'))
+  }
+)

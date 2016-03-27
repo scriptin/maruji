@@ -1,36 +1,11 @@
-'use strict';
+'use strict'
 
 const _ = require('lodash')
-const fs = require('fs')
-const parseString = require('xml2js').parseString
 const Promise = require('bluebird')
-Promise.promisifyAll(fs)
-
-const DATA_IN_DIR = 'data-in/'
-const DATA_OUT_DIR = 'data-out/'
-const KANJI_LIST_FILE = DATA_IN_DIR + 'kanji-list.json'
-const SIMILAR_KANJI_FILE = DATA_IN_DIR + 'similar-kanji.json'
-const OUT_FILE = DATA_OUT_DIR + 'similar-kanji.json'
-const KANJIVG_DIR = 'src/resources/kanjivg/'
-const JUNK_REGEXP = /[A-Z\ud840-\udfff\/？\+]+/gi
+const util = require('./build-util')
 
 const SIMILARITY_THRESHOLD = 0.01
 const MIN_SIMILAR = 20
-
-const charCode = char => char.charCodeAt(0).toString(16)
-const kanjiCode = kanji => _.padStart(charCode(kanji), 5, '0')
-const fileName = kanji => KANJIVG_DIR + kanjiCode(kanji) + '.svg'
-
-const read = file => fs.readFileAsync(file, 'utf8')
-const getJSON = fileName => read(fileName).then(text => JSON.parse(text))
-
-const parseXML = xmlString => new Promise((resolve, reject) => {
-  parseString(
-    xmlString,
-    { async: true },
-    (err, data) => err ? reject(err) : resolve(data)
-  )
-})
 
 const getSvgRoot = svg => svg.svg.g[0].g[0]
 const containsGroups = g => g.g && _.isArray(g.g) && ! _.isEmpty(g.g)
@@ -74,7 +49,7 @@ const weightComponents = comps => {
     let elem = parts[2]
     let weight = 1 / Math.pow(level + 1, 1.5)
     return elem
-      .replace(JUNK_REGEXP, '')
+      .replace(util.JUNK_REGEXP, '')
       .split('')
       .map(component => ({ component, weight }))
   })
@@ -101,11 +76,7 @@ const similarity = (
 }
 
 const buildSvgMap = kanjiList => Promise.all(
-  kanjiList.map(kanji => {
-    return read(fileName(kanji))
-      .then(parseXML)
-      .then(svg => [kanji, svg])
-  })
+  kanjiList.map(kanji => util.readXML(util.svgFileName(kanji)).then(svg => [ kanji, svg ]))
 ).then(_.fromPairs)
 
 const buildSimilarityMap = (kanjiList, similarPairs) => {
@@ -125,8 +96,8 @@ const buildSimilarityMap = (kanjiList, similarPairs) => {
 
 console.log('Reading kanji list and similar kanji pairs...')
 Promise.join(
-  getJSON(KANJI_LIST_FILE),
-  getJSON(SIMILAR_KANJI_FILE),
+  util.readJSON(util.KANJI_LIST_FILE),
+  util.readJSON(util.SIMILAR_KANJI_FILE),
   (kanjiList, similarPairs) => {
     console.log('Building svg objects map and similarity map...')
     Promise.join(
@@ -155,7 +126,7 @@ Promise.join(
 
         console.log('Picking most similar kanji...')
         let items = _(kanjiList).map((thisKanji, idx) => {
-          if ((idx + 1) % 100 == 0) console.log((idx + 1) + ' of ' + kanjiList.length)
+          util.reportProgress(idx, kanjiList.length, 100)
           let similarKanji = _(kanjiList)
             .filter(k => k != thisKanji)
             .map(otherKanji => ({
@@ -173,12 +144,9 @@ Promise.join(
           return [ thisKanji, similarKanji ]
         }).fromPairs().value()
 
-        console.log('Writing to "' + OUT_FILE + '"...')
-        fs.writeFileAsync(
-          OUT_FILE,
-          JSON.stringify(items, null, '  '),
-          'utf8'
-        ).then(() => console.log('Done!'))
+        console.log('Writing to "' + util.SIMILAR_KANJI_OUT_FILE + '"...')
+        util.write(util.SIMILAR_KANJI_OUT_FILE, JSON.stringify(items, null, '  '))
+          .then(() => console.log('Done!'))
       }
     )
   }
