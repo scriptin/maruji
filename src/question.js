@@ -75,8 +75,13 @@ const buildAnswerOptions = (kanji, kanjiDataList, questionType, svgSize) => {
   }
 }
 
-export const buildQuestion = (kanjiList, kanjiVocab, progress) => {
-  let question = buildQuestionBase(kanjiList, kanjiVocab, progress)
+export const buildQuestion = (state) => {
+  let question = buildQuestionBase(
+    state.kanjiListStore.list,
+    state.kanjiVocabStore.vocab,
+    state.progressStore.progress
+  )
+
   return Promise.map(question.kanjiOptions, kanji => {
     return util.getPlainText(kanjiToUrl(kanji))
       .then(svgPlainText => {

@@ -8,7 +8,7 @@ require('../styles/answer-panel.less')
 
 const UNKNOWN_KANJI_PLACEHOLDER = '？'
 
-function questionTitle(questionType) {
+const questionTitle = questionType => {
   switch (questionType) {
     case QUESTION_TYPE_STROKE_ORDER: return 'Select kanji strokes in a correct order:';
     case QUESTION_TYPE_COMPONENTS: return 'Select kanji components in any order:';

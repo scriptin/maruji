@@ -17,7 +17,7 @@ const loadJSONAndHandleErrors = (fileUrl, dispatch) => util.getJSON(fileUrl)
   .catch(Error, e => dispatch(reportError(e)))
   .catch(xhr => dispatch(reportError(util.xhrToErrorMsg(xhr))))
 
-export function initApp(files) {
+export const initApp = files => {
   return dispatch => {
     dispatch(listLoadStart())
     dispatch(vocabLoadStart())
@@ -63,7 +63,7 @@ export const similarLoadEnd = createAction(SIMILAR_LOAD_END)
 
 // Handling progress, localStorage
 
-function storageAvailable() {
+const storageAvailable = () => {
   try {
     let storage = window.localStorage
     let x = '__storage_test__' + Math.random()
@@ -75,7 +75,7 @@ function storageAvailable() {
   }
 }
 
-export function initProgress(savedProgress = {}) {
+export const initProgress = (savedProgress = {}) => {
   return dispatch => {
     if ( ! storageAvailable()) {
       return dispatch(reportError('Local storage is not available in this browser'))
@@ -95,12 +95,9 @@ export const setProgress = createAction(SET_PROGRESS)
 
 // Questions
 
-export function nextQuestion() {
+export const nextQuestion = () => {
   return (dispatch, getState) => {
-    let kanjiList = getState().kanjiListStore.list
-    let kanjiVocab = getState().kanjiVocabStore.vocab
-    let progress = getState().progressStore.progress
-    return buildQuestion(kanjiList, kanjiVocab, progress)
+    return buildQuestion(getState())
       .then(question => dispatch(askQuestion(question)))
       .catch(Error, e => dispatch(reportError(e)))
       .catch(xhr => dispatch(reportError(util.xhrToErrorMsg(xhr))))
