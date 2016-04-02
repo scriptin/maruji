@@ -13,18 +13,18 @@ export const reportError = createAction(REPORT_ERROR, e => e instanceof Error ? 
 
 // Initialization
 
+const loadJSONAndHandleErrors = (fileUrl, dispatch) => util.getJSON(fileUrl)
+  .catch(Error, e => dispatch(reportError(e)))
+  .catch(xhr => dispatch(reportError(util.xhrToErrorMsg(xhr))))
+
 export function initApp(files) {
   return dispatch => {
     dispatch(listLoadStart())
     dispatch(vocabLoadStart())
     dispatch(initProgress())
     return Promise.join(
-      util.getJSON(files.kanjiList)
-        .catch(Error, e => dispatch(reportError(e)))
-        .catch(xhr => dispatch(reportError(util.xhrToErrorMsg(xhr)))),
-      util.getJSON(files.kanjiVocab)
-        .catch(Error, e => dispatch(reportError(e)))
-        .catch(xhr => dispatch(reportError(util.xhrToErrorMsg(xhr)))),
+      loadJSONAndHandleErrors(files.kanjiList),
+      loadJSONAndHandleErrors(files.kanjiVocab),
       (list, vocab) => {
         dispatch(listLoadEnd(list))
         dispatch(vocabLoadEnd(vocab))
