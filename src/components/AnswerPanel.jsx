@@ -1,7 +1,7 @@
 import React, { PropTypes } from 'react'
 import { connect } from 'react-redux'
 import SvgPanel from './SvgPanel'
-import { QUESTION_TYPE_STROKE_ORDER, QUESTION_TYPE_COMPONENTS } from '../question'
+import { QUESTION_TYPE } from '../question'
 import { nextQuestion } from '../actions'
 
 require('../styles/answer-panel.less')
@@ -10,8 +10,9 @@ const UNKNOWN_KANJI_PLACEHOLDER = '？'
 
 const questionTitle = questionType => {
   switch (questionType) {
-    case QUESTION_TYPE_STROKE_ORDER: return 'Select kanji strokes in a correct order:';
-    case QUESTION_TYPE_COMPONENTS: return 'Select kanji components in any order:';
+    case QUESTION_TYPE.STROKE_ORDER: return 'Select kanji strokes in a correct order:'
+    case QUESTION_TYPE.RANDOM_KANJI: return 'Select a correct kanji:'
+    case QUESTION_TYPE.SIMILAR_KANJI: return 'Select a correct kanji:'
     default: throw new Error('Unexpected question type: ' + questionType)
   }
 }
@@ -36,7 +37,7 @@ const AnswerPanel = ({
             <td>
               <span className="big-kanji">
                 {
-                  (done || questionType == QUESTION_TYPE_STROKE_ORDER)
+                  (done || questionType == QUESTION_TYPE.STROKE_ORDER)
                     ? kanji
                     : UNKNOWN_KANJI_PLACEHOLDER
                 }

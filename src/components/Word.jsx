@@ -39,12 +39,12 @@ const Word = ({ kanji, hide, word }) => (
   <div className="word panel panel-default">
     <div className="panel-heading">
       <h3 className="panel-title">
-        { renderWriting(word.w, kanji, hide) }
-        { renderReadings(word.r) }
+        { renderWriting(word.vocab.w, kanji, hide) }
+        { renderReadings(word.vocab.r) }
       </h3>
     </div>
     <div className="panel-body">
-      <TranslationList translations={word.t} />
+      <TranslationList translations={word.vocab.t} />
     </div>
   </div>
 )
@@ -53,13 +53,16 @@ Word.propTypes = {
   kanji: PropTypes.string.isRequired,
   hide: PropTypes.bool.isRequired,
   word: PropTypes.shape({
-    w: PropTypes.string.isRequired,
-    r: PropTypes.arrayOf(PropTypes.string).isRequired,
-    t: PropTypes.arrayOf(PropTypes.shape({
-      pos: PropTypes.arrayOf(PropTypes.string).isRequired,
-      forKana: PropTypes.arrayOf(PropTypes.string).isRequired,
-      gloss: PropTypes.arrayOf(PropTypes.string).isRequired
-    })).isRequired
+    vocab: PropTypes.shape({
+      w: PropTypes.string.isRequired,
+      r: PropTypes.arrayOf(PropTypes.string).isRequired,
+      t: PropTypes.arrayOf(PropTypes.shape({
+        pos: PropTypes.arrayOf(PropTypes.string).isRequired,
+        forKana: PropTypes.arrayOf(PropTypes.string).isRequired,
+        gloss: PropTypes.arrayOf(PropTypes.string).isRequired
+      })).isRequired
+    }).isRequired,
+    correct: PropTypes.bool.isRequired
   }).isRequired
 }
 

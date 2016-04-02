@@ -3,6 +3,7 @@ import $ from 'jquery'
 import { combineReducers } from 'redux'
 import { handleActions } from 'redux-actions'
 import * as util from './util'
+import * as svgUtil from './svg'
 import {
   REPORT_ERROR,
   LIST_LOAD_START, LIST_LOAD_END,
@@ -11,7 +12,7 @@ import {
   SET_PROGRESS,
   ASK_QUESTION, GIVE_ANSWER
 } from './actions'
-import { QUESTION_TYPE_STROKE_ORDER, QUESTION_TYPE_COMPONENTS } from './question'
+import { QUESTION_TYPE } from './question'
 
 // Errors store
 
@@ -98,14 +99,9 @@ const resetAnswerOption = (option, questionType) => {
   let answeredAndCorrect = option.answered && option.correct
   return _.assign({}, option, {
     answered: answeredAndCorrect,
-    correct: (questionType == QUESTION_TYPE_STROKE_ORDER) ? answeredAndCorrect : option.correct,
+    correct: (questionType == QUESTION_TYPE.STROKE_ORDER) ? answeredAndCorrect : option.correct,
     active: ! answeredAndCorrect // only correct answers stay inactive
   })
-}
-
-const updateSvgStroke = (svg, answerId) => {
-  $(svg.find('.strokes path').toArray()[answerId]).removeClass('muted')
-  return svg
 }
 
 const updateStateOnStrokeOrderAnswer = (state, action) => {
@@ -113,7 +109,7 @@ const updateStateOnStrokeOrderAnswer = (state, action) => {
   let optionIdx = state.answerOptions.findIndex(a => a.answerId == action.payload)
 
   let kanjiSvg = correct
-    ? updateSvgStroke(state.kanjiSvg.clone(), action.payload)
+    ? svgUtil.unmuteStroke(state.kanjiSvg.clone(), action.payload)
     : state.kanjiSvg
   let answerOptions = util.replaceElement(
     state.answerOptions.map(resetAnswerOption),
@@ -139,23 +135,19 @@ const updateStateOnStrokeOrderAnswer = (state, action) => {
   })
 }
 
-const updateStateOnComponentsAnswer = (state, action) => {
-  let optionIdx = state.answerOptions.findIndex(a => a.answerId == action.payload)
-  let correct = state.answerOptions[optionIdx].correct
+const updateStateOnKanjiAnswer = (state, action) => {
+  let correct = state.answerOptions[action.payload].correct
+  let optionIdx = action.payload
 
-  let kanjiSvg = state.kanjiSvg // TODO
+  let kanjiSvg = correct
+    ? svgUtil.showRoot(state.kanjiSvg.clone())
+    : state.kanjiSvg
   let answerOptions = util.replaceElement(
     state.answerOptions.map(resetAnswerOption),
     optionIdx,
     updateAnswerOption(state.answerOptions[optionIdx], correct)
   )
-  let answerQueue = correct
-    ? _.concat(state.answerQueue, action.payload)
-    : state.answerQueue
-  let totalCorrectOptions = state.answerOptions.filter(a => a.correct).length
-  let progress = correct
-    ? Math.round((state.answerQueue.length + 1) / totalCorrectOptions * 100)
-    : state.progress
+  let progress = correct ? 100 : 0
   let mistakeCount = correct
     ? state.mistakeCount
     : (state.mistakeCount + 1)
@@ -163,7 +155,6 @@ const updateStateOnComponentsAnswer = (state, action) => {
   return _.assign({}, state, {
     kanjiSvg,
     answerOptions,
-    answerQueue,
     progress,
     mistakeCount
   })
@@ -174,6 +165,7 @@ const defaultQuestionStore = {
   type: null,
   kanji: null,
   kanjiSvg: null,
+  kanjiOptions: [],
   words: [],
   answerOptions: [],
   answerQueue: [],
@@ -183,13 +175,22 @@ const defaultQuestionStore = {
 
 const questionStore = handleActions({
   [ASK_QUESTION]: (state, action) => _.assign({}, defaultQuestionStore, action.payload, {
-    isLoading: false
+    isLoading: false,
+    answerOptions: action.payload.answerOptions.map((ao, idx) => ({
+      svg: ao.svg,
+      correct: ao.correct,
+      order: ao.order,
+      answerId: ao.order != null ? ao.order : idx, // order is null if question type is not STROKE_ORDER
+      answered: false,
+      active: true
+    }))
   }),
   [GIVE_ANSWER]: (state, action) => {
     if (state.progress >= 100) return state
     switch (state.type) {
-      case QUESTION_TYPE_STROKE_ORDER: return updateStateOnStrokeOrderAnswer(state, action)
-      case QUESTION_TYPE_COMPONENTS: return updateStateOnComponentsAnswer(state, action)
+      case QUESTION_TYPE.STROKE_ORDER: return updateStateOnStrokeOrderAnswer(state, action)
+      case QUESTION_TYPE.RANDOM_KANJI: return updateStateOnKanjiAnswer(state, action)
+      case QUESTION_TYPE.SIMILAR_KANJI: return updateStateOnKanjiAnswer(state, action)
       default: throw new Error('Unexpected question type: ' + state.type)
     }
   }

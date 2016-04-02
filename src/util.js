@@ -15,3 +15,12 @@ export const getPlainText = url => Promise.resolve($.get({
 
 export const replaceElement = (arr, idx, elem) =>
   _.concat(arr.slice(0, idx), elem).concat(arr.slice(idx + 1))
+
+export const selectRandomIncluding = (list, n, ...including) => {
+  let result = [...including]
+  while (result.length < n) {
+    let next = list[_.random(list.length - 1)]
+    if ( ! _.includes(result, next)) result.push(next)
+  }
+  return _.shuffle(result)
+}

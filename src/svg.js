@@ -70,6 +70,21 @@ export const muteAllStrokes = svg => {
   return svg
 }
 
+export const unmuteStroke = (svg, idx) => {
+  $(svg.find('.strokes path').toArray()[idx]).removeClass('muted')
+  return svg
+}
+
+export const hideRoot = svg => {
+  svg.find('.strokes').addClass('hidden')
+  return svg
+}
+
+export const showRoot = svg => {
+  svg.find('.strokes').removeClass('hidden')
+  return svg
+}
+
 const GROUP_ATTRS = {
   element  : _.identity,
   variant  : v => new Boolean(v).valueOf(),
@@ -129,17 +144,3 @@ const getMeta = (elems, root) => elems.map(el => {
 })
 
 export const getMetadata = svg => getMeta(svg.find('.strokes > g').toArray(), svg)[0]
-
-export const splitIntoComponents = (svg, meta) => {
-  if (meta.decomposable) {
-    return _.flattenDeep(
-      meta.children.map(childMeta => {
-        let clone = svg.clone()
-        clone.find('[data-id="' + childMeta.id + '"]').siblings().remove()
-        return splitIntoComponents(clone, childMeta)
-      })
-    )
-  } else {
-    return [svg.clone()]
-  }
-}

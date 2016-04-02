@@ -1,7 +1,7 @@
 import React, { PropTypes } from 'react'
 import Word from './Word'
 import { connect } from 'react-redux'
-import { QUESTION_TYPE_STROKE_ORDER } from '../question'
+import { QUESTION_TYPE } from '../question'
 
 const WordList = ({ kanji, hide, words }) => (
   <div>
@@ -19,7 +19,7 @@ export default connect(state => {
   let questionStore = state.questionStore
   return {
     kanji: questionStore.kanji,
-    hide: questionStore.type != QUESTION_TYPE_STROKE_ORDER,
+    hide: questionStore.type != QUESTION_TYPE.STROKE_ORDER,
     words: questionStore.words
   }
 })(WordList)
