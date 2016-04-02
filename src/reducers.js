@@ -7,6 +7,7 @@ import {
   REPORT_ERROR,
   LIST_LOAD_START, LIST_LOAD_END,
   VOCAB_LOAD_START, VOCAB_LOAD_END,
+  SIMILAR_LOAD_START, SIMILAR_LOAD_END,
   SET_PROGRESS,
   ASK_QUESTION, GIVE_ANSWER
 } from './actions'
@@ -53,6 +54,21 @@ const kanjiVocabStore = handleActions({
 }, {
   isLoading: false,
   vocab: {}
+})
+
+// Similar kanji store
+
+const similarKanjiStore = handleActions({
+  [SIMILAR_LOAD_START]: (state, action) => _.assign({}, state, {
+    isLoading: true
+  }),
+  [SIMILAR_LOAD_END]: (state, action) => _.assign({}, state, {
+    isLoading: false,
+    similar: action.payload
+  })
+}, {
+  isLoading: false,
+  similar: {}
 })
 
 // Progress store
@@ -183,6 +199,7 @@ export default combineReducers({
   errorStore,
   kanjiListStore,
   kanjiVocabStore,
+  similarKanjiStore,
   progressStore,
   questionStore
 })
