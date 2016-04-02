@@ -4,7 +4,7 @@ import ErrorAlert from './ErrorAlert'
 import QuestionArea from './QuestionArea'
 import AnswerArea from './AnswerArea'
 
-const App = ({ isLoading, status }) => (
+const App = () => (
   <div>
     <Header />
     <div className="container">
