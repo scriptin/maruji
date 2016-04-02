@@ -13,21 +13,21 @@ export const reportError = createAction(REPORT_ERROR, e => e instanceof Error ? 
 
 // Initialization
 
-export function initApp(listUrl, defsUrl) {
+export function initApp(files) {
   return dispatch => {
     dispatch(listLoadStart())
-    dispatch(defsLoadStart())
+    dispatch(vocabLoadStart())
     dispatch(initProgress())
     return Promise.join(
-      util.getJSON(listUrl)
+      util.getJSON(files.kanjiList)
         .catch(Error, e => dispatch(reportError(e)))
         .catch(xhr => dispatch(reportError(util.xhrToErrorMsg(xhr)))),
-      util.getJSON(defsUrl)
+      util.getJSON(files.kanjiVocab)
         .catch(Error, e => dispatch(reportError(e)))
         .catch(xhr => dispatch(reportError(util.xhrToErrorMsg(xhr)))),
-      (list, defs) => {
+      (list, vocab) => {
         dispatch(listLoadEnd(list))
-        dispatch(defsLoadEnd(defs))
+        dispatch(vocabLoadEnd(vocab))
         dispatch(nextQuestion())
       }
     )
@@ -42,13 +42,13 @@ export const listLoadStart = createAction(LIST_LOAD_START)
 export const LIST_LOAD_END = 'LIST_LOAD_END'
 export const listLoadEnd = createAction(LIST_LOAD_END)
 
-// Kanji definitions loading
+// Kanji-vacabulary loading
 
-export const DEFS_LOAD_START = 'DEFS_LOAD_START'
-export const defsLoadStart = createAction(DEFS_LOAD_START)
+export const VOCAB_LOAD_START = 'VOCAB_LOAD_START'
+export const vocabLoadStart = createAction(VOCAB_LOAD_START)
 
-export const DEFS_LOAD_END = 'DEFS_LOAD_END'
-export const defsLoadEnd = createAction(DEFS_LOAD_END)
+export const VOCAB_LOAD_END = 'VOCAB_LOAD_END'
+export const vocabLoadEnd = createAction(VOCAB_LOAD_END)
 
 // Handling progress, localStorage
 
@@ -87,9 +87,9 @@ export const setProgress = createAction(SET_PROGRESS)
 export function nextQuestion() {
   return (dispatch, getState) => {
     let kanjiList = getState().kanjiListStore.list
-    let kanjiDefs = getState().kanjiDefsStore.defs
+    let kanjiVocab = getState().kanjiVocabStore.vocab
     let progress = getState().progressStore.progress
-    return buildQuestion(kanjiList, kanjiDefs, progress)
+    return buildQuestion(kanjiList, kanjiVocab, progress)
       .then(question => dispatch(askQuestion(question)))
       .catch(Error, e => dispatch(reportError(e)))
       .catch(xhr => dispatch(reportError(util.xhrToErrorMsg(xhr))))

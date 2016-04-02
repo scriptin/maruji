@@ -23,12 +23,12 @@ const selectRandomIncluding = (list, n, ...including) => {
   return _.shuffle(result)
 }
 
-const buildQuestionBase = (kanjiList, kanjiDefs, progress) => {
+const buildQuestionBase = (kanjiList, kanjiVocab, progress) => {
   // TODO: build question based on progress data.
   let type = (Math.random() > 0.8) ? QUESTION_TYPE_STROKE_ORDER : QUESTION_TYPE_COMPONENTS
   let kanji = kanjiList[(Math.random() * kanjiList.length) | 0]
   let isNew = true
-  let words = kanjiDefs.kanji[kanji].map(wordId => kanjiDefs.words[wordId])
+  let words = kanjiVocab.kanji[kanji].map(wordId => kanjiVocab.words[wordId])
   let kanjiOptions = (type == QUESTION_TYPE_STROKE_ORDER)
     ? [kanji]
     : selectRandomIncluding(kanjiList, KANJI_TO_FETCH, kanji)
@@ -75,8 +75,8 @@ const buildAnswerOptions = (kanji, kanjiDataList, questionType, svgSize) => {
   }
 }
 
-export const buildQuestion = (kanjiList, kanjiDefs, progress) => {
-  let question = buildQuestionBase(kanjiList, kanjiDefs, progress)
+export const buildQuestion = (kanjiList, kanjiVocab, progress) => {
+  let question = buildQuestionBase(kanjiList, kanjiVocab, progress)
   return Promise.map(question.kanjiOptions, kanji => {
     return util.getPlainText(kanjiToUrl(kanji))
       .then(svgPlainText => {

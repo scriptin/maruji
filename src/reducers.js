@@ -6,7 +6,7 @@ import * as util from './util'
 import {
   REPORT_ERROR,
   LIST_LOAD_START, LIST_LOAD_END,
-  DEFS_LOAD_START, DEFS_LOAD_END,
+  VOCAB_LOAD_START, VOCAB_LOAD_END,
   SET_PROGRESS,
   ASK_QUESTION, GIVE_ANSWER
 } from './actions'
@@ -40,19 +40,19 @@ const kanjiListStore = handleActions({
   list: []
 })
 
-// Kanji definitions store
+// Kanji-vocabulary store
 
-const kanjiDefsStore = handleActions({
-  [DEFS_LOAD_START]: (state, action) => _.assign({}, state, {
+const kanjiVocabStore = handleActions({
+  [VOCAB_LOAD_START]: (state, action) => _.assign({}, state, {
     isLoading: true
   }),
-  [DEFS_LOAD_END]: (state, action) => _.assign({}, state, {
+  [VOCAB_LOAD_END]: (state, action) => _.assign({}, state, {
     isLoading: false,
-    defs: action.payload
+    vocab: action.payload
   })
 }, {
   isLoading: false,
-  defs: {}
+  vocab: {}
 })
 
 // Progress store
@@ -182,7 +182,7 @@ const questionStore = handleActions({
 export default combineReducers({
   errorStore,
   kanjiListStore,
-  kanjiDefsStore,
+  kanjiVocabStore,
   progressStore,
   questionStore
 })
