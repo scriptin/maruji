@@ -24,6 +24,6 @@ ReactDOM.render(
 
 store.dispatch(initApp({
   kanjiList: 'kanji-list.json',
-  kanjiVocab: 'kanji-defs.json',
+  kanjiVocab: 'kanji-vocab.json',
   similarKanji: 'similar-kanji.json'
 }))
