@@ -6,6 +6,9 @@ TODO:
   - How to split kanji into components? Textual representation vs. partial SVG
   - If possible, take position into account, e.g. give answer options for the same component in different places
 
+- Matching vocabulary question type:
+  - Build a list of kanji with same readings, so that instead of random words the app could display words with similarly sounding hidden kanji; This might help to prevent deducing correct answers by readings
+
 - Progress:
   - Storage format
   - Handling updates
