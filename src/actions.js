@@ -24,9 +24,9 @@ export const initApp = files => {
     dispatch(similarLoadStart())
     dispatch(initProgress())
     return Promise.join(
-      loadJSONAndHandleErrors(files.kanjiList),
-      loadJSONAndHandleErrors(files.kanjiVocab),
-      loadJSONAndHandleErrors(files.similarKanji),
+      loadJSONAndHandleErrors(files.kanjiList, dispatch),
+      loadJSONAndHandleErrors(files.kanjiVocab, dispatch),
+      loadJSONAndHandleErrors(files.similarKanji, dispatch),
       (list, vocab, similar) => {
         dispatch(listLoadEnd(list))
         dispatch(vocabLoadEnd(vocab))
