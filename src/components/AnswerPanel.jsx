@@ -13,6 +13,7 @@ const questionTitle = questionType => {
     case QUESTION_TYPE.STROKE_ORDER: return 'Select kanji strokes in a correct order:'
     case QUESTION_TYPE.RANDOM_KANJI: return 'Select a correct kanji:'
     case QUESTION_TYPE.SIMILAR_KANJI: return 'Select a correct kanji:'
+    case QUESTION_TYPE.MATCHING_VOCAB: return 'Select all words (on the left) for the kanji:'
     default: throw new Error('Unexpected question type: ' + questionType)
   }
 }

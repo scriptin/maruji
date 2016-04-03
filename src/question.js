@@ -20,7 +20,7 @@ question :: {
   type :: Enum,
   kanji :: Char,
   kanjiSvg :: jQuery,
-  kanjiOptions: [{ // If type == STROKE_ORDER, then contains a single element
+  kanjiOptions: [{ // If type == STROKE_ORDER or type == MATCHING_VOCAB, then contains a single element
     kanji :: Char,
     correct :: Boolean // `true` if this.kanji == question.kanji
   }]
@@ -42,11 +42,12 @@ export const QUESTION_TYPE = {
   STROKE_ORDER: 'STROKE_ORDER',
   RANDOM_KANJI: 'RANDOM_KANJI',
   SIMILAR_KANJI: 'SIMILAR_KANJI',
-  COMPONENTS: 'COMPONENTS',
-  MATCHING_VOCAB: 'MATCHING_VOCAB'
+  MATCHING_VOCAB: 'MATCHING_VOCAB',
+  COMPONENTS: 'COMPONENTS'
 }
 
 const HOW_MUCH_KANJI = 8
+const HOW_MUCH_WORDS = 24
 const KANJI_ANSWER_SIZE = 100
 const KANJI_ANSWER_OPTION_SIZE = 90
 const KANJIG_PATH = 'kanjivg'
@@ -58,7 +59,8 @@ const buildQustionHandle = (progress, kanjiList) => {
   let typeList = [
     QUESTION_TYPE.STROKE_ORDER,
     QUESTION_TYPE.RANDOM_KANJI,
-    QUESTION_TYPE.SIMILAR_KANJI
+    QUESTION_TYPE.SIMILAR_KANJI,
+    QUESTION_TYPE.MATCHING_VOCAB
   ]
   let type = typeList[_.random(typeList.length - 1)]
   let kanji = kanjiList[(Math.random() * kanjiList.length) | 0]
@@ -85,6 +87,21 @@ const addQuestionDetails = (questionHandle, kanjiList, kanjiVocab, similarKanji)
         .value()
         .map(kanji => ({ kanji, correct: kanji == questionHandle.kanji }))
     })
+    case QUESTION_TYPE.MATCHING_VOCAB:
+      let correctWords = getWords(kanjiVocab, questionHandle.kanji, true)
+      let otherWords = _(util.selectRandomIncluding(kanjiList, HOW_MUCH_KANJI))
+        .flatMap(kanji => getWords(kanjiVocab, kanji, false))
+        .take(HOW_MUCH_WORDS - correctWords.length)
+      let allWords = otherWords.concat(correctWords)
+        // make sure we don't accidentaly add words for different kanji which contain a target kanji:
+        .filter(word => word.correct || ! _.includes(word.vocab.w, questionHandle.kanji))
+        .uniqBy(word => word.id)
+        .shuffle()
+        .value()
+      return _.assign({}, questionHandle, {
+        words: allWords,
+        kanjiOptions: [{ kanji: questionHandle.kanji, correct: true }]
+      })
     default: throw new Error('Unexpected question type: ' + questionHandle.type)
   }
 }
@@ -93,13 +110,6 @@ const getWords = (kanjiVocab, kanji, correct) => kanjiVocab.kanji[kanji]
   .map(id => ({ kanji, id, vocab: kanjiVocab.words[id], correct }))
 
 const addQuestionAsyncData = questionWithDetails => {
-  if (questionWithDetails.type == QUESTION_TYPE.MATCHING_VOCAB) {
-    // In this case there is nothing to fetch, instead we just add empty list of answer options,
-    // because all answer options are in the list of words, not list of kanji
-    return Promise.resolve(
-      _.assign({}, questionWithDetails, { answerOptions: [] })
-    )
-  }
   return Promise.map(questionWithDetails.kanjiOptions, ({ kanji, correct }) => {
     return util.getPlainText(kanjiToUrl(kanji))
       .then(svgPlainText => {
@@ -131,6 +141,7 @@ const prepareSvg = (questionType, svg, size) => {
     case QUESTION_TYPE.STROKE_ORDER: return svgUtil.muteAllStrokes(postprocessedSvg)
     case QUESTION_TYPE.RANDOM_KANJI: return svgUtil.hideRoot(postprocessedSvg)
     case QUESTION_TYPE.SIMILAR_KANJI: return svgUtil.hideRoot(postprocessedSvg)
+    case QUESTION_TYPE.MATCHING_VOCAB: return postprocessedSvg
     default: throw new Error('Unexpected question type: ' + questionType)
   }
 }
@@ -140,6 +151,7 @@ const buildAnswerOptions = (questionType, kanji, kanjiDataList, size) => {
     case QUESTION_TYPE.STROKE_ORDER: return buildStrokeOrderAnswerOptions(kanji, kanjiDataList[0].svg, size)
     case QUESTION_TYPE.RANDOM_KANJI: return buildKanjiAnswerOptions(kanjiDataList, size)
     case QUESTION_TYPE.SIMILAR_KANJI: return buildKanjiAnswerOptions(kanjiDataList, size)
+    case QUESTION_TYPE.MATCHING_VOCAB: return []
     default: throw new Error('Unexpected question type: ' + questionType)
   }
 }

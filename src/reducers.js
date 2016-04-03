@@ -160,6 +160,31 @@ const updateStateOnKanjiAnswer = (state, action) => {
   })
 }
 
+const updateStateOnVocabAnswer = (state, action) => {
+  let correct = state.words[action.payload].correct
+  let optionIdx = action.payload
+
+  let words = util.replaceElement(
+    state.words.map(resetAnswerOption),
+    optionIdx,
+    updateAnswerOption(state.words[optionIdx], correct)
+  )
+  let totalCorrect = state.words.filter(w => w.correct).length
+  let correctAndAnswered = state.words.filter(w => w.correct && w.answered).length
+  let progress = correct
+    ? Math.round((correctAndAnswered + 1) / totalCorrect * 100)
+    : state.progress
+  let mistakeCount = correct
+    ? state.mistakeCount
+    : (state.mistakeCount + 1)
+
+  return _.assign({}, state, {
+    words,
+    progress,
+    mistakeCount
+  })
+}
+
 const defaultQuestionStore = {
   isLoading: true,
   type: null,
@@ -176,6 +201,11 @@ const defaultQuestionStore = {
 const questionStore = handleActions({
   [ASK_QUESTION]: (state, action) => _.assign({}, defaultQuestionStore, action.payload, {
     isLoading: false,
+    words: action.payload.words.map((w, idx) => _.assign({}, w, {
+      answerId: idx,
+      answered: false,
+      active: true
+    })),
     answerOptions: action.payload.answerOptions.map((ao, idx) => ({
       svg: ao.svg,
       correct: ao.correct,
@@ -191,6 +221,7 @@ const questionStore = handleActions({
       case QUESTION_TYPE.STROKE_ORDER: return updateStateOnStrokeOrderAnswer(state, action)
       case QUESTION_TYPE.RANDOM_KANJI: return updateStateOnKanjiAnswer(state, action)
       case QUESTION_TYPE.SIMILAR_KANJI: return updateStateOnKanjiAnswer(state, action)
+      case QUESTION_TYPE.MATCHING_VOCAB: return updateStateOnVocabAnswer(state, action)
       default: throw new Error('Unexpected question type: ' + state.type)
     }
   }

@@ -35,21 +35,45 @@ const renderReadings = readings => (
   </span>
 )
 
-const Word = ({ hide, word }) => (
-  <div className="word panel panel-default">
-    <div className="panel-heading">
-      <h3 className="panel-title">
-        { renderWriting(word.vocab.w, word.kanji, hide) }
-        { renderReadings(word.vocab.r) }
-      </h3>
+const renderSelectButton = (clickHandler, correct, answered, active) => {
+  let correctnessClass = 'btn-default'
+  if (answered) {
+    correctnessClass = correct ? 'btn-success' : 'btn-danger'
+  }
+  let text = 'select'
+  if (answered) {
+    text = correct ? '○ correct' : '× wrong'
+  }
+  return (
+    <button className={ 'btn btn-xs pull-rigth ' + correctnessClass }
+      disabled={ ! active}
+      onClick={clickHandler}>
+      { text }
+    </button>
+  )
+}
+
+const Word = ({ showSelectButton, hide, word, onSelectButtonClick }) => {
+  let clickHandler = () => onSelectButtonClick(word.answerId)
+  return (
+    <div className="word panel panel-default">
+      <div className="panel-heading">
+        <h3 className="panel-title">
+          { renderWriting(word.vocab.w, word.kanji, hide) }
+          { renderReadings(word.vocab.r) }
+          { showSelectButton ? renderSelectButton(clickHandler, word.correct, word.answered, word.active) : '' }
+        </h3>
+      </div>
+      <div className="panel-body">
+        <TranslationList translations={word.vocab.t} />
+      </div>
     </div>
-    <div className="panel-body">
-      <TranslationList translations={word.vocab.t} />
-    </div>
-  </div>
-)
+  )
+}
 
 Word.propTypes = {
+  showSelectButton: PropTypes.bool.isRequired,
+  onSelectButtonClick: PropTypes.func.isRequired,
   hide: PropTypes.bool.isRequired,
   word: PropTypes.shape({
     kanji: PropTypes.string.isRequired,
