@@ -35,7 +35,7 @@ const renderReadings = readings => (
   </span>
 )
 
-const renderSelectButton = (clickHandler, correct, answered, active) => {
+const renderSelectButton = (clickHandler, correct, answered, active, done) => {
   let correctnessClass = 'btn-default'
   if (answered) {
     correctnessClass = correct ? 'btn-success' : 'btn-danger'
@@ -46,22 +46,22 @@ const renderSelectButton = (clickHandler, correct, answered, active) => {
   }
   return (
     <button className={ 'btn btn-xs pull-rigth ' + correctnessClass }
-      disabled={ ! active}
+      disabled={ done || ! active }
       onClick={clickHandler}>
       { text }
     </button>
   )
 }
 
-const Word = ({ showSelectButton, hide, word, onSelectButtonClick }) => {
+const Word = ({ done, showSelectButton, hide, word, onSelectButtonClick }) => {
   let clickHandler = () => onSelectButtonClick(word.answerId)
   return (
     <div className="word panel panel-default">
       <div className="panel-heading">
         <h3 className="panel-title">
-          { renderWriting(word.vocab.w, word.kanji, hide && ! word.answered) }
+          { renderWriting(word.vocab.w, word.kanji, hide && ! (word.answered || done)) }
           { renderReadings(word.vocab.r) }
-          { showSelectButton ? renderSelectButton(clickHandler, word.correct, word.answered, word.active) : '' }
+          { showSelectButton ? renderSelectButton(clickHandler, word.correct, word.answered, word.active, done) : '' }
         </h3>
       </div>
       <div className="panel-body">
@@ -72,6 +72,7 @@ const Word = ({ showSelectButton, hide, word, onSelectButtonClick }) => {
 }
 
 Word.propTypes = {
+  done: PropTypes.bool.isRequired,
   showSelectButton: PropTypes.bool.isRequired,
   onSelectButtonClick: PropTypes.func.isRequired,
   hide: PropTypes.bool.isRequired,

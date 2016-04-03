@@ -5,12 +5,12 @@ import { QUESTION_TYPE } from '../question'
 import { giveAnswer } from '../actions'
 
 const WordList = ({
-  showSelectButton, hide, words,
+  done, showSelectButton, hide, words,
   onSelectButtonClick
 }) => (
   <div>
     { words.map((word, idx) =>
-      <Word key={idx} word={word} hide={hide}
+      <Word key={idx} word={word} hide={hide} done={done}
         showSelectButton={showSelectButton}
         onSelectButtonClick={onSelectButtonClick} />
     ) }
@@ -18,6 +18,7 @@ const WordList = ({
 )
 
 WordList.propTypes = {
+  done: PropTypes.bool.isRequired,
   showSelectButton: PropTypes.bool.isRequired,
   hide: PropTypes.bool.isRequired,
   words: PropTypes.arrayOf(PropTypes.object).isRequired
@@ -27,6 +28,7 @@ export default connect(
   state => {
     let questionStore = state.questionStore
     return {
+      done: questionStore.progress >= 100,
       showSelectButton: questionStore.type == QUESTION_TYPE.MATCHING_VOCAB,
       hide: questionStore.type != QUESTION_TYPE.STROKE_ORDER,
       words: questionStore.words
