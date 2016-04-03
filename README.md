@@ -22,6 +22,7 @@ TODO:
   - About page
 
 - UI/visual:
+  - Display circle or cross symbol on SVG button when it is clicked as an answer to provide additional indication of the result (currently it's only the green or red color)
   - Logo
   - Favicon
   - Slogan in the title
