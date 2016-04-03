@@ -1,0 +1,38 @@
+#app {
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.flex() {
+  display: flex;
+  position: relative;
+  height: 100%;
+}
+
+.flex-column {
+  .flex();
+  flex-flow: column nowrap;
+
+  .flex-column-item-fixed {
+    flex: 0 0 auto;
+  }
+
+  .flex-column-item-fill {
+    flex: 1 1 auto;
+  }
+}
+
+.flex-row {
+  .flex();
+  flex-flow: row nowrap;
+  align-items: stretch;
+
+  .flex-row-item-scrollable {
+    flex: 1 1 auto;
+    top: 0;
+    bottom: 0;
+    overflow-y: scroll;
+  }
+}
