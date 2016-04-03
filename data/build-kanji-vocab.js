@@ -176,6 +176,7 @@ Promise.join(
     console.log('Validating kanji-vocab data...')
     validateKanjiVocab(kanjiVocab)
     console.log('Number of words in a final kanji-vocab data: ' + _.keys(kanjiVocab.words).length)
+    kanjiVocab.tags = dict.tags
 
     console.log('Writing to file "' + util.KANJI_VOCAB_OUT_FILE + '"...')
     util.write(util.KANJI_VOCAB_OUT_FILE, JSON.stringify(kanjiVocab, null, '  '))

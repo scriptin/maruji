@@ -53,7 +53,7 @@ const renderSelectButton = (clickHandler, correct, answered, active, done) => {
   )
 }
 
-const Word = ({ done, showSelectButton, hide, word, onSelectButtonClick }) => {
+const Word = ({ done, showSelectButton, hide, word, tags, onSelectButtonClick }) => {
   let clickHandler = () => onSelectButtonClick(word.answerId)
   return (
     <div className="word panel panel-default">
@@ -65,7 +65,7 @@ const Word = ({ done, showSelectButton, hide, word, onSelectButtonClick }) => {
         </h3>
       </div>
       <div className="panel-body">
-        <TranslationList translations={word.vocab.t} />
+        <TranslationList translations={word.vocab.t} tags={tags} />
       </div>
     </div>
   )
@@ -89,7 +89,8 @@ Word.propTypes = {
       })).isRequired
     }).isRequired,
     correct: PropTypes.bool.isRequired
-  }).isRequired
+  }).isRequired,
+  tags: PropTypes.object.isRequired
 }
 
 export default Word

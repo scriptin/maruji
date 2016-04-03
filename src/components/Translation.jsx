@@ -1,8 +1,17 @@
 import React, { PropTypes } from 'react'
 
-const renderPos = pos => (
+const renderPosTag = (tag, description, idx, isLast) => (
+  <span key={idx}>
+    <abbr title={description}>{ ' ' +  tag + ' ' }</abbr>
+    { isLast ? '' : ',' }
+  </span>
+)
+
+const renderPosTags = (pos, tags) => (
   <small className="text-info">
-    { '(' + pos.join(', ') + ')' }
+    { '(' }
+    { pos.map((tag, idx) => renderPosTag(tag, tags[tag], idx, idx == pos.length - 1)) }
+    { ')' }
   </small>
 )
 
@@ -15,9 +24,9 @@ const renderForKana = forKana => {
   )
 }
 
-const Translation = ({ translation }) => (
+const Translation = ({ translation, tags }) => (
   <li>
-    { renderPos(translation.pos) }
+    { renderPosTags(translation.pos, tags) }
     { ' ' }
     { translation.gloss.join('; ') }
     { ' ' }
@@ -30,7 +39,8 @@ Translation.propTypes = {
     pos: PropTypes.arrayOf(PropTypes.string).isRequired,
     gloss: PropTypes.arrayOf(PropTypes.string).isRequired,
     forKana: PropTypes.arrayOf(PropTypes.string).isRequired
-  }).isRequired
+  }).isRequired,
+  tags: PropTypes.object.isRequired
 }
 
 export default Translation
