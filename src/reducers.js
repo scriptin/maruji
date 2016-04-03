@@ -187,6 +187,7 @@ const updateStateOnVocabAnswer = (state, action) => {
 
 const defaultQuestionStore = {
   isLoading: true,
+  needScrollUpdate: true,
   type: null,
   kanji: null,
   kanjiSvg: null,
@@ -201,6 +202,7 @@ const defaultQuestionStore = {
 const questionStore = handleActions({
   [ASK_QUESTION]: (state, action) => _.assign({}, defaultQuestionStore, action.payload, {
     isLoading: false,
+    needScrollUpdate: true,
     words: action.payload.words.map((w, idx) => _.assign({}, w, {
       answerId: idx,
       answered: false,
@@ -216,13 +218,14 @@ const questionStore = handleActions({
     }))
   }),
   [GIVE_ANSWER]: (state, action) => {
-    if (state.progress >= 100) return state
-    switch (state.type) {
-      case QUESTION_TYPE.STROKE_ORDER: return updateStateOnStrokeOrderAnswer(state, action)
-      case QUESTION_TYPE.RANDOM_KANJI: return updateStateOnKanjiAnswer(state, action)
-      case QUESTION_TYPE.SIMILAR_KANJI: return updateStateOnKanjiAnswer(state, action)
-      case QUESTION_TYPE.MATCHING_VOCAB: return updateStateOnVocabAnswer(state, action)
-      default: throw new Error('Unexpected question type: ' + state.type)
+    let newState = _.assign({}, state, { needScrollUpdate: false })
+    if (newState.progress >= 100) return newState
+    switch (newState.type) {
+      case QUESTION_TYPE.STROKE_ORDER: return updateStateOnStrokeOrderAnswer(newState, action)
+      case QUESTION_TYPE.RANDOM_KANJI: return updateStateOnKanjiAnswer(newState, action)
+      case QUESTION_TYPE.SIMILAR_KANJI: return updateStateOnKanjiAnswer(newState, action)
+      case QUESTION_TYPE.MATCHING_VOCAB: return updateStateOnVocabAnswer(newState, action)
+      default: throw new Error('Unexpected question type: ' + newState.type)
     }
   }
 }, defaultQuestionStore)
