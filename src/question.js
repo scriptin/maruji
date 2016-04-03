@@ -25,6 +25,8 @@ question :: {
     correct :: Boolean // `true` if this.kanji == question.kanji
   }]
   words: [{
+    kanji :: Char, // Kanji for which this word was selected
+    id :: String, // Vocabulary item ID
     vocab :: Object, // See `kanji-vocab.json` file
     correct :: Boolean // Always `true` if type != MATCHING_VOCAB
   }],
@@ -88,7 +90,7 @@ const addQuestionDetails = (questionHandle, kanjiList, kanjiVocab, similarKanji)
 }
 
 const getWords = (kanjiVocab, kanji, correct) => kanjiVocab.kanji[kanji]
-  .map(wordId => ({ vocab: kanjiVocab.words[wordId], correct }))
+  .map(id => ({ kanji, id, vocab: kanjiVocab.words[id], correct }))
 
 const addQuestionAsyncData = questionWithDetails => {
   if (questionWithDetails.type == QUESTION_TYPE.MATCHING_VOCAB) {

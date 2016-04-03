@@ -35,11 +35,11 @@ const renderReadings = readings => (
   </span>
 )
 
-const Word = ({ kanji, hide, word }) => (
+const Word = ({ hide, word }) => (
   <div className="word panel panel-default">
     <div className="panel-heading">
       <h3 className="panel-title">
-        { renderWriting(word.vocab.w, kanji, hide) }
+        { renderWriting(word.vocab.w, word.kanji, hide) }
         { renderReadings(word.vocab.r) }
       </h3>
     </div>
@@ -50,9 +50,10 @@ const Word = ({ kanji, hide, word }) => (
 )
 
 Word.propTypes = {
-  kanji: PropTypes.string.isRequired,
   hide: PropTypes.bool.isRequired,
   word: PropTypes.shape({
+    kanji: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
     vocab: PropTypes.shape({
       w: PropTypes.string.isRequired,
       r: PropTypes.arrayOf(PropTypes.string).isRequired,
