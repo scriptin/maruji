@@ -59,7 +59,7 @@ const Word = ({ showSelectButton, hide, word, onSelectButtonClick }) => {
     <div className="word panel panel-default">
       <div className="panel-heading">
         <h3 className="panel-title">
-          { renderWriting(word.vocab.w, word.kanji, hide) }
+          { renderWriting(word.vocab.w, word.kanji, hide && ! word.answered) }
           { renderReadings(word.vocab.r) }
           { showSelectButton ? renderSelectButton(clickHandler, word.correct, word.answered, word.active) : '' }
         </h3>
