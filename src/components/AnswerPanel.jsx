@@ -18,7 +18,7 @@ const questionTitle = questionType => {
 }
 
 const AnswerPanel = ({
-  questionType, kanji, kanjiSvg, answerOptions, progress, done, mistakeCount,
+  questionType, showKanji, kanji, kanjiSvg, answerOptions, progress, done, mistakeCount,
   onContinueClick
 }) => (
   <div className="panel panel-default answer-panel">
@@ -36,11 +36,7 @@ const AnswerPanel = ({
             </td>
             <td>
               <span className="big-kanji">
-                {
-                  (done || questionType == QUESTION_TYPE.STROKE_ORDER)
-                    ? kanji
-                    : UNKNOWN_KANJI_PLACEHOLDER
-                }
+                { showKanji ? kanji : UNKNOWN_KANJI_PLACEHOLDER }
               </span>
             </td>
             <td>
@@ -94,6 +90,7 @@ const AnswerPanel = ({
 
 AnswerPanel.propTypes = {
   questionType: PropTypes.string.isRequired,
+  showKanji: PropTypes.bool.isRequired,
   kanji: PropTypes.string.isRequired,
   kanjiSvg: PropTypes.object.isRequired,
   progress: PropTypes.number.isRequired,
@@ -105,12 +102,16 @@ AnswerPanel.propTypes = {
 export default connect(
   state => {
     let questionStore = state.questionStore
+    let questionType = questionStore.type
+    let done = questionStore.progress >= 100
+    let questionTypesWithVisibleKanji = [QUESTION_TYPE.STROKE_ORDER, QUESTION_TYPE.MATCHING_VOCAB]
     return {
-      questionType: questionStore.type,
+      questionType,
+      showKanji: done || _.includes(questionTypesWithVisibleKanji, questionType),
       kanji: questionStore.kanji,
       kanjiSvg: questionStore.kanjiSvg,
       progress: questionStore.progress,
-      done: questionStore.progress >= 100,
+      done,
       mistakeCount: questionStore.mistakeCount
     }
   },
