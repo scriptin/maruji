@@ -5,6 +5,7 @@ npm-debug.log
 # GitHub has a hard limit of 100MB per file
 data/data-in/*.tsv
 data/data-in/*.json
+data/data-in/*.xml
 # These two files are small:
 !data/data-in/kanji-list.json
 !data/data-in/similar-kanji.json

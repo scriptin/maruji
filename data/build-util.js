@@ -66,9 +66,11 @@ module.exports = {
   SIMILAR_KANJI_FILE: DATA_IN_DIR + 'similar-kanji.json',
   DICT_FILE:          DATA_IN_DIR + 'jmdict-eng.json',
   WORD_FREQ_FILE:     DATA_IN_DIR + 'wikipedia-20150422-lemmas.tsv',
+  KANJIDIC2_FILE:     DATA_IN_DIR + 'kanjidic2.xml',
 
   SIMILAR_KANJI_OUT_FILE: DATA_OUT_DIR + 'similar-kanji.json',
   KANJI_VOCAB_OUT_FILE:   DATA_OUT_DIR + 'kanji-vocab.json',
+  SOUNDS_OUT_FILE:        DATA_OUT_DIR + 'sounds.json',
 
   KANJI_REGEXP: /[\u4e00-\u9fff]+/g,
   JUNK_REGEXP:  /[A-Z\ud840-\udfff\/？\+]+/gi,
