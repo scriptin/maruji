@@ -55,24 +55,15 @@ const extractSvgPathCount = svg => {
 const countStrokes = svg => extractSvgPathCount(getSvgRoot(svg))
 
 const weightComponents = comps => {
-  let numberOfComponentsByLevel = {}
-  comps.forEach(comp => {
-    numberOfComponentsByLevel[comp.level] = numberOfComponentsByLevel[comp.level] || 0
-    numberOfComponentsByLevel[comp.level] += 1
-  })
-  return _.flatMap(comps, comp => {
-    let weight
-    if (comp.level == 0) {
-      weight = 0.5
-    } else {
-      let levelAbove = numberOfComponentsByLevel[comp.level - 1]
-      weight = (1 / (levelAbove + 1)) / (numberOfComponentsByLevel[comp.level] + 1)
-    }
-    return {
-      component: comp.component,
-      weight
-    }
-  })
+  let levels = comps.map(c => c.level)
+  let nComponentsOnLevel = _.countBy(levels)
+  // Levels hold equal amount of weight, distributed among all components on a level
+  let weightPerLevel = 1 / (_.max(levels) + 1)
+
+  return comps.map(comp => ({
+    component: comp.component,
+    weight: weightPerLevel / nComponentsOnLevel[comp.level]
+  }))
 }
 
 const getSimilarity = (similarityMaps, type, a, b) => {
