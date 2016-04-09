@@ -15,7 +15,8 @@ const containsPaths = g => g.path && _.isArray(g.path) && ! _.isEmpty(g.path)
 
 const extractGroupMetadata = (g, level) => {
   let element = g.$['kvg:element'] || g.$['kvg:phon'] || '？'
-  let groupMetadata = { element, level }
+  let position = g.$['kvg:position'] || 'none'
+  let groupMetadata = { element, level, position }
   let subgroupsMetadata = []
   if (containsGroups(g)) {
     subgroupsMetadata = _.flatten(
@@ -31,7 +32,11 @@ const decompose = svg => {
     return g.element
       .replace(util.JUNK_REGEXP, '')
       .split('')
-      .map(component => ({ component, level: g.level }))
+      .map(component => ({
+        component,
+        level: g.level,
+        position: g.position
+      }))
   }))
 }
 
@@ -77,9 +82,26 @@ const getSimilarity = (similarityMaps, type, a, b) => {
   return false
 }
 
+const POSITION_SIMILARITY = {
+  'same': 1,
+  'left-right': 0.9,
+  'top-bottom': 0.9,
+  'kamae-kamae1': 0.5,
+  'kamae-kamae2': 0.5,
+  'kamae1-kamae2': 0.5,
+  'other': 0.1
+}
+
+const getPositionSimilarity = (p1, p2) => {
+  if (p1 == p2) return POSITION_SIMILARITY.same
+  let combo1 = p1 + '-' + p2
+  let combo2 = p2 + '-' + p1
+  return POSITION_SIMILARITY[combo1] || POSITION_SIMILARITY[combo2] || POSITION_SIMILARITY.other
+}
+
 const componentsSimilarity = (c1, c2, similarityMaps) => {
   let a = c1.component, b = c2.component
-  let weight = c1.weight * c2.weight
+  let weight = c1.weight * c2.weight * getPositionSimilarity(c1.position, c2.position)
   let similarity1 = getSimilarity(similarityMaps, "componentsOnly", a, b)
   let similarity2 = getSimilarity(similarityMaps, "both", a, b)
   return (a == b) ? weight : weight * (similarity1 || similarity2 || 0)
