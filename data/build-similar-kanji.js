@@ -13,19 +13,20 @@ const getSvgRoot = svg => svg.svg.g[0].g[0]
 const containsGroups = g => g.g && _.isArray(g.g) && ! _.isEmpty(g.g)
 const containsPaths = g => g.path && _.isArray(g.path) && ! _.isEmpty(g.path)
 
-const extractSvgGroups = (g, level) => {
+const extractGroupMetadata = (g, level) => {
   let elem = g.$['kvg:element'] || g.$['kvg:phon'] || '？'
-  let svgGroupMetadata = { elem, level }
-  let value = null
+  let groupMetadata = { elem, level }
+  let subgroupsMetadata = []
   if (containsGroups(g)) {
-    value = g.g.map(group => extractSvgGroups(group, level + 1)).filter(_.identity)
-    if (_.isEmpty(value)) value = null
+    subgroupsMetadata = _.flatten(
+      g.g.map(group => extractGroupMetadata(group, level + 1))
+    ).filter(_.identity)
   }
-  return value ? [svgGroupMetadata].concat(_.flatten(value)) : [svgGroupMetadata]
+  return [groupMetadata].concat(subgroupsMetadata)
 }
 
 const decompose = svg => {
-  let groups = extractSvgGroups(getSvgRoot(svg), 0).sort()
+  let groups = extractGroupMetadata(getSvgRoot(svg), 0).sort()
   return _.flatten(groups.map(g => {
     return g.elem
       .replace(util.JUNK_REGEXP, '')
