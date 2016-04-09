@@ -14,8 +14,8 @@ const containsGroups = g => g.g && _.isArray(g.g) && ! _.isEmpty(g.g)
 const containsPaths = g => g.path && _.isArray(g.path) && ! _.isEmpty(g.path)
 
 const extractGroupMetadata = (g, level) => {
-  let elem = g.$['kvg:element'] || g.$['kvg:phon'] || '？'
-  let groupMetadata = { elem, level }
+  let element = g.$['kvg:element'] || g.$['kvg:phon'] || '？'
+  let groupMetadata = { element, level }
   let subgroupsMetadata = []
   if (containsGroups(g)) {
     subgroupsMetadata = _.flatten(
@@ -26,9 +26,9 @@ const extractGroupMetadata = (g, level) => {
 }
 
 const decompose = svg => {
-  let groups = extractGroupMetadata(getSvgRoot(svg), 0).sort()
+  let groups = extractGroupMetadata(getSvgRoot(svg), 0)
   return _.flatten(groups.map(g => {
-    return g.elem
+    return g.element
       .replace(util.JUNK_REGEXP, '')
       .split('')
       .map(component => ({ component, level: g.level }))
@@ -70,8 +70,12 @@ const weightComponents = comps => {
   })
 }
 
-const getSimilarity = (similarityMaps, type, a, b) =>
-  (similarityMaps[type][a] && similarityMaps[type][a][b]) ? similarityMaps[type][a][b] : false
+const getSimilarity = (similarityMaps, type, a, b) => {
+  if (similarityMaps[type][a] && similarityMaps[type][a][b]) {
+    return similarityMaps[type][a][b]
+  }
+  return false
+}
 
 const componentsSimilarity = (c1, c2, similarityMaps) => {
   let a = c1.component, b = c2.component
@@ -101,7 +105,10 @@ const similarity = (
 }
 
 const buildSvgMap = kanjiList => Promise.all(
-  kanjiList.map(kanji => util.readXML(util.svgFileName(kanji)).then(svg => [ kanji, svg ]))
+  kanjiList.map(kanji => {
+    return util.readXML(util.svgFileName(kanji))
+      .then(svg => [ kanji, svg ])
+  })
 ).then(_.fromPairs)
 
 const buildSimilarityMaps = (kanjiList, similarPairs) => {
