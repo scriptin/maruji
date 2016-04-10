@@ -72,9 +72,13 @@ const POSITION_SIMILARITY = {
   'same': 1,
   'left-right': 0.9,
   'top-bottom': 0.9,
-  'kamae-kamae1': 0.5,
-  'kamae-kamae2': 0.5,
-  'kamae1-kamae2': 0.5,
+  'kamae-kamae1': 0.7,
+  'kamae-kamae2': 0.7,
+  'kamae1-kamae2': 0.7,
+  'none-left': 0.5,
+  'none-right': 0.5,
+  'none-top': 0.5,
+  'none-bottom': 0.5,
   'other': 0.1
 }
 
