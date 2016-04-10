@@ -7,7 +7,7 @@ const util = require('./build-util')
 // How many kanji to take from the similarity-ordered list
 const SIMILAR_LIST_LENGTH = 20
 // Below which value of similarity two kanji are not considered simialar
-const SIMILARITY_THRESHOLD = 0.05
+const SIMILARITY_THRESHOLD = 0.1
 
 const getSvgRoot = svg => svg.svg.g[0].g[0]
 const containsGroups = g => g.g && _.isArray(g.g) && ! _.isEmpty(g.g)
@@ -28,7 +28,6 @@ const extractGroupMetadata = (g, level) => {
 
 const decompose = svg => {
   let groups = extractGroupMetadata(getSvgRoot(svg), 0)
-    .filter(g => g.level < 3) // Do not go too deep
   return _.flatten(groups.map(g => {
     return g.element
       .replace(util.JUNK_REGEXP, '')
@@ -55,16 +54,9 @@ const extractSvgPathCount = svg => {
 
 const countStrokes = svg => extractSvgPathCount(getSvgRoot(svg))
 
-const weightComponents = comps => {
-  let levels = comps.map(c => c.level)
-  let nComponentsOnLevel = _.countBy(levels)
-  // Levels hold equal amount of weight, distributed among all components on a level
-  let weightPerLevel = 1 / (_.max(levels) + 1)
-
-  return comps.map(comp => _.assign({}, comp, {
-    weight: weightPerLevel / nComponentsOnLevel[comp.level],
-  }))
-}
+const weightComponents = comps => comps.map(
+  comp => _.assign({}, comp, { weight: 1 / (comp.level + 1) })
+)
 
 const getSimilarity = (similarityMaps, type, a, b) => _.get(similarityMaps, [type, a, b], false)
 
