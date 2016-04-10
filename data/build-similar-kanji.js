@@ -74,38 +74,42 @@ const POSITION_SIMILARITY = {
   'other': 0.1
 }
 
-const getPositionSimilarity = (p1, p2) => {
+const positionSimilarity = (p1, p2) => {
   if (p1 == p2) return POSITION_SIMILARITY.same
   let combo1 = p1 + '-' + p2
   let combo2 = p2 + '-' + p1
   return POSITION_SIMILARITY[combo1] || POSITION_SIMILARITY[combo2] || POSITION_SIMILARITY.other
 }
 
+const levelSimilarity = (l1, l2) => Math.min(l1 + 1, l2 + 1) / Math.max(l1 + 1, l2 + 1)
+
+const strokeCountSimilarity = (s1, s2) => Math.pow(Math.min(s1, s2) / Math.max(s1, s2), 2)
+
 const componentsSimilarity = (c1, c2, similarityMaps) => {
   let a = c1.component, b = c2.component
-  let weight = c1.weight * c2.weight * getPositionSimilarity(c1.position, c2.position)
+  let weight = c1.weight * c2.weight
+    * positionSimilarity(c1.position, c2.position)
+    * levelSimilarity(c1.level, c2.level)
   let similarity1 = getSimilarity(similarityMaps, "componentsOnly", a, b)
   let similarity2 = getSimilarity(similarityMaps, "both", a, b)
   return (a == b) ? weight : weight * (similarity1 || similarity2 || 0)
 }
 
-// Returns a number in (0, 1) interval
-const similarity = (
-  a, weightedComponents1, nStrokes1,
-  b, weightedComponents2, nStrokes2,
-  similarityMaps
-) => {
+const similarityForKanji = (a, b, similarityMaps) => {
   let similarity1 = getSimilarity(similarityMaps, "kanjiOnly", a, b)
   let similarity2 = getSimilarity(similarityMaps, "both", a, b)
-  if (similarity1 || similarity2) {
-    return similarity1 || similarity2
-  } else {
-    let score = _(weightedComponents1).flatMap(c1 => {
-      return weightedComponents2.map(c2 => componentsSimilarity(c1, c2, similarityMaps))
-    }).sum()
-    let strokeCountRatio = Math.min(nStrokes1, nStrokes2) / Math.max(nStrokes1, nStrokes2)
-    return score * Math.pow(strokeCountRatio, 2)
-  }
+  return similarity1 || similarity2 || 0
+}
+
+const similarityByComponents = (
+  a, components1, nStrokes1,
+  b, components2, nStrokes2,
+  similarityMaps
+) => {
+  let score = _(components1).map(c1 => {
+    return _.max(components2.map(c2 => componentsSimilarity(c1, c2, similarityMaps)))
+  }).sum()
+  return score * strokeCountSimilarity(nStrokes1, nStrokes2)
 }
 
 const buildSvgMap = kanjiList => Promise.all(
@@ -144,7 +148,7 @@ Promise.join(
       (svgMap, similarityMaps) => {
         console.log('Decomposing kanji...')
         let componentsMap = _(svgMap)
-          .map((svg, kanji) => [kanji, decompose(svg)])
+          .map((svg, kanji) => [ kanji, weightComponents(decompose(svg)) ])
           .fromPairs()
           .value()
         // console.log(componentsMap)
@@ -155,28 +159,27 @@ Promise.join(
           .value()
         // console.log(strokeCountMap)
 
-        console.log('Calculating component weigths...')
-        let weightedComponentsMap = _(componentsMap)
-          .map((comps, kanji) => [kanji, weightComponents(comps)])
-          .fromPairs()
-          .value()
-        // console.log(weightedComponentsMap)
-
         console.log('Picking most similar kanji...')
         let items = _(kanjiList).map((thisKanji, idx) => {
           util.reportProgress(idx, kanjiList.length, 100)
           let similarKanji = _(kanjiList)
             .filter(k => k != thisKanji)
-            .map(otherKanji => ({
-              kanji: otherKanji,
-              similarity: similarity(
-                thisKanji, weightedComponentsMap[thisKanji], strokeCountMap[thisKanji],
-                otherKanji, weightedComponentsMap[otherKanji], strokeCountMap[otherKanji],
+            .map(otherKanji => {
+              let forKanji = similarityForKanji(thisKanji, otherKanji, similarityMaps)
+              let byComponents = similarityByComponents(
+                thisKanji,  componentsMap[thisKanji],  strokeCountMap[thisKanji],
+                otherKanji, componentsMap[otherKanji], strokeCountMap[otherKanji],
                 similarityMaps
               )
-            }))
-            .sort((a, b) => b.similarity - a.similarity)
-            .takeWhile((kanji, idx) => idx < SIMILAR_LIST_LENGTH || kanji.similarity >= SIMILARITY_THRESHOLD)
+              return {
+                kanji: otherKanji,
+                forKanji,
+                byComponents,
+                score: (forKanji > 0) ? (10 + forKanji) : byComponents
+              }
+            })
+            .sort((a, b) => b.score - a.score)
+            .takeWhile((kanji, idx) => idx < SIMILAR_LIST_LENGTH || kanji.score >= SIMILARITY_THRESHOLD)
             .map(o => o.kanji)
             .join('')
           return [ thisKanji, similarKanji ]
