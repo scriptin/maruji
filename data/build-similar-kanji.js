@@ -66,12 +66,7 @@ const weightComponents = comps => {
   }))
 }
 
-const getSimilarity = (similarityMaps, type, a, b) => {
-  if (similarityMaps[type][a] && similarityMaps[type][a][b]) {
-    return similarityMaps[type][a][b]
-  }
-  return false
-}
+const getSimilarity = (similarityMaps, type, a, b) => _.get(similarityMaps, [type, a, b], false)
 
 const POSITION_SIMILARITY = {
   'same': 1,
