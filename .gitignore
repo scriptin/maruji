@@ -9,6 +9,7 @@ data/data-in/*.xml
 # These two files are small:
 !data/data-in/kanji-list.json
 !data/data-in/similar-kanji.json
+!data/data-in/kradfile.json
 
 # Output data
 data/data-out/**
