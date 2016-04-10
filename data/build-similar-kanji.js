@@ -61,9 +61,8 @@ const weightComponents = comps => {
   // Levels hold equal amount of weight, distributed among all components on a level
   let weightPerLevel = 1 / (_.max(levels) + 1)
 
-  return comps.map(comp => ({
-    component: comp.component,
-    weight: weightPerLevel / nComponentsOnLevel[comp.level]
+  return comps.map(comp => _.assign({}, comp, {
+    weight: weightPerLevel / nComponentsOnLevel[comp.level],
   }))
 }
 
