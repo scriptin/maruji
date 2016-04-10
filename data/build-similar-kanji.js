@@ -28,6 +28,7 @@ const extractGroupMetadata = (g, level) => {
 
 const decompose = svg => {
   let groups = extractGroupMetadata(getSvgRoot(svg), 0)
+    .filter(g => g.level < 3) // Do not go too deep
   return _.flatten(groups.map(g => {
     return g.element
       .replace(util.JUNK_REGEXP, '')
