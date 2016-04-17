@@ -67,7 +67,7 @@ const buildQustionHandle = (progress, kanjiList) => {
   return { type, kanji }
 }
 
-const addQuestionDetails = (questionHandle, kanjiList, kanjiVocab, similarKanji) => {
+const addQuestionDetails = (questionHandle, kanjiList, kanjiVocab, similarKanji, kanjiSounds) => {
   switch (questionHandle.type) {
     case QUESTION_TYPE.STROKE_ORDER: return _.assign({}, questionHandle, {
       words: getWords(kanjiVocab, questionHandle.kanji, true),
@@ -89,22 +89,40 @@ const addQuestionDetails = (questionHandle, kanjiList, kanjiVocab, similarKanji)
         .map(kanji => ({ kanji, correct: kanji == questionHandle.kanji }))
     })
     case QUESTION_TYPE.MATCHING_VOCAB:
-      let correctWords = getWords(kanjiVocab, questionHandle.kanji, true)
-      let otherWords = _(util.selectRandomIncluding(kanjiList, HOW_MUCH_KANJI))
+      let theKanji = questionHandle.kanji
+      let correctWords = getWords(kanjiVocab, theKanji, true)
+      let sounds = kanjiSounds[theKanji]
+      let otherWords = _(getKanjiWithSimilarSounds(kanjiList, theKanji, kanjiSounds, sounds, HOW_MUCH_KANJI))
         .flatMap(kanji => getWords(kanjiVocab, kanji, false))
+        .shuffle()
         .take(HOW_MUCH_WORDS - correctWords.length)
       let allWords = otherWords.concat(correctWords)
         // make sure we don't accidentaly add words for different kanji which contain a target kanji:
-        .filter(word => word.correct || ! _.includes(word.vocab.w, questionHandle.kanji))
+        .filter(word => word.correct || ! _.includes(word.vocab.w, theKanji))
         .uniqBy(word => word.id)
         .shuffle()
         .value()
       return _.assign({}, questionHandle, {
         words: allWords,
-        kanjiOptions: [{ kanji: questionHandle.kanji, correct: true }]
+        kanjiOptions: [{ kanji: theKanji, correct: true }]
       })
     default: throw new Error('Unexpected question type: ' + questionHandle.type)
   }
+}
+
+const getKanjiWithSimilarSounds = (kanjiList, targetKanji, kanjiSounds, sounds, howMany) => {
+  let candidates = []
+  kanjiList.forEach(candidate => {
+    if (targetKanji == candidate) return;
+    let sameSounds = _.intersection(kanjiSounds[candidate], kanjiSounds[targetKanji]).length
+    candidates.push({ candidate, sameSounds })
+  })
+  return _(candidates)
+    .shuffle() // make sure candidates are not in the same order each time
+    .orderBy(['sameSounds'], ['desc'])
+    .map(o => o.candidate)
+    .take(howMany)
+    .value()
 }
 
 const getWords = (kanjiVocab, kanji, correct) => kanjiVocab.kanji[kanji]
@@ -177,6 +195,7 @@ export const buildQuestion = state => {
   let kanjiList = state.kanjiListStore.list
   let kanjiVocab = state.kanjiVocabStore.vocab
   let similarKanji = state.similarKanjiStore.similar
+  let kanjiSounds = state.kanjiSoundsStore.sounds
 
   // Step 1: build question handle
   let questionHandle = buildQustionHandle(
@@ -189,7 +208,8 @@ export const buildQuestion = state => {
     questionHandle,
     kanjiList,
     kanjiVocab,
-    similarKanji
+    similarKanji,
+    kanjiSounds
   )
 
   // Step 3: add data which needs to be loaded via AJAX requests:

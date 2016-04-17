@@ -22,15 +22,18 @@ export const initApp = files => {
     dispatch(listLoadStart())
     dispatch(vocabLoadStart())
     dispatch(similarLoadStart())
+    dispatch(soundsLoadStart())
     dispatch(initProgress())
     return Promise.join(
       loadJSONAndHandleErrors(files.kanjiList, dispatch),
       loadJSONAndHandleErrors(files.kanjiVocab, dispatch),
       loadJSONAndHandleErrors(files.similarKanji, dispatch),
-      (list, vocab, similar) => {
+      loadJSONAndHandleErrors(files.kanjiSounds, dispatch),
+      (list, vocab, similar, sounds) => {
         dispatch(listLoadEnd(list))
         dispatch(vocabLoadEnd(vocab))
         dispatch(similarLoadEnd(similar))
+        dispatch(soundsLoadEnd(sounds))
         dispatch(nextQuestion())
       }
     )
@@ -60,6 +63,14 @@ export const similarLoadStart = createAction(SIMILAR_LOAD_START)
 
 export const SIMILAR_LOAD_END = 'SIMILAR_LOAD_END'
 export const similarLoadEnd = createAction(SIMILAR_LOAD_END)
+
+// Kanji sounds loading
+
+export const SOUNDS_LOAD_START = 'SOUNDS_LOAD_START'
+export const soundsLoadStart = createAction(SOUNDS_LOAD_START)
+
+export const SOUNDS_LOAD_END = 'SOUNDS_LOAD_END'
+export const soundsLoadEnd = createAction(SOUNDS_LOAD_END)
 
 // Handling progress, localStorage
 

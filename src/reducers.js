@@ -9,6 +9,7 @@ import {
   LIST_LOAD_START, LIST_LOAD_END,
   VOCAB_LOAD_START, VOCAB_LOAD_END,
   SIMILAR_LOAD_START, SIMILAR_LOAD_END,
+  SOUNDS_LOAD_START, SOUNDS_LOAD_END,
   SET_PROGRESS,
   ASK_QUESTION, GIVE_ANSWER
 } from './actions'
@@ -70,6 +71,21 @@ const similarKanjiStore = handleActions({
 }, {
   isLoading: false,
   similar: {}
+})
+
+// Kanji sounds store
+
+const kanjiSoundsStore = handleActions({
+  [SOUNDS_LOAD_START]: (state, action) => _.assign({}, state, {
+    isLoading: true
+  }),
+  [SOUNDS_LOAD_END]: (state, action) => _.assign({}, state, {
+    isLoading: false,
+    sounds: action.payload
+  })
+}, {
+  isLoading: false,
+  sounds: {}
 })
 
 // Progress store
@@ -235,6 +251,7 @@ export default combineReducers({
   kanjiListStore,
   kanjiVocabStore,
   similarKanjiStore,
+  kanjiSoundsStore,
   progressStore,
   questionStore
 })
