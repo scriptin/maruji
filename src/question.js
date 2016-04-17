@@ -46,8 +46,8 @@ export const QUESTION_TYPE = {
   COMPONENTS: 'COMPONENTS'
 }
 
-const HOW_MUCH_KANJI = 8
-const HOW_MUCH_WORDS = 24
+const HOW_MANY_KANJI = 8
+const HOW_MANY_WORDS = 24
 const KANJI_ANSWER_SIZE = 100
 const KANJI_ANSWER_OPTION_SIZE = 90
 const KANJIG_PATH = 'kanjivg'
@@ -75,14 +75,14 @@ const addQuestionDetails = (questionHandle, kanjiList, kanjiVocab, similarKanji,
     })
     case QUESTION_TYPE.RANDOM_KANJI: return _.assign({}, questionHandle, {
       words: getWords(kanjiVocab, questionHandle.kanji, true),
-      kanjiOptions: util.selectRandomIncluding(kanjiList, HOW_MUCH_KANJI, questionHandle.kanji)
+      kanjiOptions: util.selectRandomIncluding(kanjiList, HOW_MANY_KANJI, questionHandle.kanji)
         .map(kanji => ({ kanji, correct: kanji == questionHandle.kanji }))
     })
     case QUESTION_TYPE.SIMILAR_KANJI: return _.assign({}, questionHandle, {
       words: getWords(kanjiVocab, questionHandle.kanji, true),
       kanjiOptions: _(similarKanji[questionHandle.kanji])
         .shuffle()
-        .take(HOW_MUCH_KANJI - 1)
+        .take(HOW_MANY_KANJI - 1)
         .concat(questionHandle.kanji)
         .shuffle()
         .value()
@@ -92,10 +92,10 @@ const addQuestionDetails = (questionHandle, kanjiList, kanjiVocab, similarKanji,
       let theKanji = questionHandle.kanji
       let correctWords = getWords(kanjiVocab, theKanji, true)
       let sounds = kanjiSounds[theKanji]
-      let otherWords = _(getKanjiWithSimilarSounds(kanjiList, theKanji, kanjiSounds, sounds, HOW_MUCH_KANJI))
+      let otherWords = _(getKanjiWithSimilarSounds(kanjiList, theKanji, kanjiSounds, sounds, HOW_MANY_KANJI))
         .flatMap(kanji => getWords(kanjiVocab, kanji, false))
         .shuffle()
-        .take(HOW_MUCH_WORDS - correctWords.length)
+        .take(HOW_MANY_WORDS - correctWords.length)
       let allWords = otherWords.concat(correctWords)
         // make sure we don't accidentaly add words for different kanji which contain a target kanji:
         .filter(word => word.correct || ! _.includes(word.vocab.w, theKanji))
