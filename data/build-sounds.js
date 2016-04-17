@@ -34,8 +34,8 @@ Promise.join(
       .filter(pair => kanjiLookupHash[pair[0]])
       .fromPairs()
 
-    console.log('Writing to "' + util.SOUNDS_OUT_FILE + '"...')
-    util.write(util.SOUNDS_OUT_FILE, JSON.stringify(sounds, null, '  '))
+    console.log('Writing to "' + util.KANJI_SOUNDS_OUT_FILE + '"...')
+    util.write(util.KANJI_SOUNDS_OUT_FILE, JSON.stringify(sounds, null, '  '))
       .then(() => console.log('Done!'))
   }
 )

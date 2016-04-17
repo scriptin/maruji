@@ -72,7 +72,7 @@ module.exports = {
   SIMILAR_KANJI_OUT_FILE: DATA_OUT_DIR + 'similar-kanji.json',
   SIMILAR_KRAD_OUT_FILE:  DATA_OUT_DIR + 'similar-krad.json',
   KANJI_VOCAB_OUT_FILE:   DATA_OUT_DIR + 'kanji-vocab.json',
-  SOUNDS_OUT_FILE:        DATA_OUT_DIR + 'sounds.json',
+  KANJI_SOUNDS_OUT_FILE:  DATA_OUT_DIR + 'kanji-sounds.json',
 
   KANJI_REGEXP: /[\u4e00-\u9fff]+/g,
   JUNK_REGEXP:  /[A-Z\ud840-\udfff\/？\+]+/gi,
