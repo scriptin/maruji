@@ -68,28 +68,28 @@ const buildQustionHandle = (progress, kanjiList) => {
 }
 
 const addQuestionDetails = (questionHandle, kanjiList, kanjiVocab, similarKanji, kanjiSounds) => {
+  const theKanji = questionHandle.kanji
   switch (questionHandle.type) {
     case QUESTION_TYPE.STROKE_ORDER: return _.assign({}, questionHandle, {
-      words: getWords(kanjiVocab, questionHandle.kanji, true),
-      kanjiOptions: [{ kanji: questionHandle.kanji, correct: true }]
+      words: getWords(kanjiVocab, theKanji, true),
+      kanjiOptions: [{ kanji: theKanji, correct: true }]
     })
     case QUESTION_TYPE.RANDOM_KANJI: return _.assign({}, questionHandle, {
-      words: getWords(kanjiVocab, questionHandle.kanji, true),
-      kanjiOptions: util.selectRandomIncluding(kanjiList, HOW_MANY_KANJI, questionHandle.kanji)
-        .map(kanji => ({ kanji, correct: kanji == questionHandle.kanji }))
+      words: getWords(kanjiVocab, theKanji, true),
+      kanjiOptions: util.selectRandomIncluding(kanjiList, HOW_MANY_KANJI, theKanji)
+        .map(kanji => ({ kanji, correct: kanji == theKanji }))
     })
     case QUESTION_TYPE.SIMILAR_KANJI: return _.assign({}, questionHandle, {
-      words: getWords(kanjiVocab, questionHandle.kanji, true),
-      kanjiOptions: _(similarKanji[questionHandle.kanji])
+      words: getWords(kanjiVocab, theKanji, true),
+      kanjiOptions: _(similarKanji[theKanji])
         .shuffle()
         .take(HOW_MANY_KANJI - 1)
-        .concat(questionHandle.kanji)
+        .concat(theKanji)
         .shuffle()
         .value()
-        .map(kanji => ({ kanji, correct: kanji == questionHandle.kanji }))
+        .map(kanji => ({ kanji, correct: kanji == theKanji }))
     })
     case QUESTION_TYPE.MATCHING_VOCAB:
-      let theKanji = questionHandle.kanji
       let correctWords = getWords(kanjiVocab, theKanji, true)
       let sounds = kanjiSounds[theKanji]
       let otherWords = _(getKanjiWithSimilarSounds(kanjiList, theKanji, kanjiSounds, sounds, HOW_MANY_KANJI))
